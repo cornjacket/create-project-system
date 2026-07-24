@@ -158,6 +158,11 @@ KL=$(grep -c . "$D/CLAUDE.md")
 [[ $KL -lt 25 ]];                           t $? "always-on cost stays small ($KL non-blank lines)"
 
 ############################################################
+section "7. Golden reproducibility (tests/run.sh)"
+bash "$REPO/tests/run.sh" >/dev/null 2>&1
+t $? "generated output matches checked-in golden fixtures"
+
+############################################################
 printf '\n\033[1m%s\033[0m\n' "==============================================="
 if [[ $FAIL -eq 0 ]]; then
     printf '\033[32mALL GREEN\033[0m — %d assertions passed\n' "$PASS"

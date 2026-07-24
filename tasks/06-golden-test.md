@@ -1,17 +1,25 @@
-# Task 06 — Golden / reproducibility test
+# Task 06 — Golden / reproducibility test  ✅ DONE
+
+> **Result:** `tests/run.sh` diffs regenerated output against checked-in fixtures
+> `tests/golden/{core,all-layers}` (75 files). Verified deterministic first (two
+> independent generations byte-identical; no dates/IDs leak into scaffolding).
+> Negative-tested: an injected one-line change is caught with a readable diff.
+> `--update` refreshes fixtures intentionally. Folded into `self-test.sh`
+> (now 55 assertions) so CI runs it on both platforms.
 
 **Goal:** lock generator output so regressions are caught by diff.
 
 ## Steps
 
-- [ ] Generate into a scratch dir with a fixed flag set and capture the output
-      tree as a checked-in expected fixture (e.g. `tests/golden/core/` and
-      `tests/golden/all-layers/`).
-- [ ] Write a test that regenerates into a temp dir and diffs against the
-      fixture; fails on any drift.
-- [ ] Ensure determinism: no timestamps / random IDs in generated scaffolding
-      (task IDs are only minted at task-creation time, not at generation time).
-- [ ] Document how to refresh the fixture intentionally.
+- [x] Captured `tests/golden/core/` (35 files) and `tests/golden/all-layers/`
+      (40 files, incl. `.claude/skills/`), committed with executable bits intact.
+- [x] `tests/run.sh` regenerates into a temp dir and `diff -r`s against each
+      fixture; drift fails with the diff printed. Also wired into `self-test.sh`.
+- [x] Determinism confirmed up front: two independent generations diffed
+      byte-identical; scanned output for today's date -> 0 occurrences. (IDs/dates
+      are minted only at task-creation time, never at generation time.)
+- [x] `bash tests/run.sh --update` refreshes fixtures; documented in the script
+      header and in the drift failure message.
 
 ## Done when
 

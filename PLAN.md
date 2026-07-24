@@ -57,7 +57,7 @@ create-task-system/
 4c. [x] [`04c-ci.md`](tasks/04c-ci.md) — run the self-test on every push/PR (Linux + macOS). ✅ (both legs green; GNU `sed` + bash 3.2/5.2 verified)
 4d. [ ] [`04d-bump-checkout-action.md`](tasks/04d-bump-checkout-action.md) — bump `actions/checkout` v4→v5 (low priority, non-blocking).
 5. [x] [`05-generate-into-tasks-test.md`](tasks/05-generate-into-tasks-test.md) — regeneration/upgrade path over a committed install. ✅ (zero-diff regen verified in standard + worktree layouts)
-6. [ ] [`06-golden-test.md`](tasks/06-golden-test.md) — reproducibility test.
+6. [x] [`06-golden-test.md`](tasks/06-golden-test.md) — reproducibility test. ✅ (tests/run.sh + golden fixtures; folded into self-test, now 55 assertions)
 7. [ ] [`07-generate-into-second-brain.md`](tasks/07-generate-into-second-brain.md) — the real target (later).
 8. [ ] [`08-generate-into-captains-log.md`](tasks/08-generate-into-captains-log.md) — roll out to captains-log (after second-brain).
 9. [ ] [`09-generate-into-ai-builder-task-free.md`](tasks/09-generate-into-ai-builder-task-free.md) — build a task-free ai-builder and regenerate into it (closes the loop; after captains-log).
