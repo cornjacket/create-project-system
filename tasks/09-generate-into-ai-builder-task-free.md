@@ -1,11 +1,25 @@
-# Task 09 — Build a task-free ai-builder, then generate into it (later)
+# Task 09 — Task-free `create-ai-builder`, then generate into it
 
-**Goal:** re-home ai-builder's task subsystem onto the generator — build a
-**task-free** variant of ai-builder (the hand-built `project/tasks/` subsystem
-removed) and regenerate it from `create-project-system`. This closes the loop: the
+**Goal:** re-home the task subsystem of the repo formerly known as ai-builder
+onto the generator — strip its hand-built `project/tasks/` machinery (content
+kept) and regenerate it from `create-project-system`. Closes the loop: the
 generator reproduces the very subsystem it was extracted from.
 
-**Do not start until task 08 (captains-log) succeeds.**
+## Progress (2026-07-24)
+
+- [x] **Renamed `ai-builder` → `create-ai-builder`** (it's a *generator* — installs
+      an agent build pipeline into a target repo — so it joins the `create-*`
+      family). Done in place on the existing `.bare`+worktree container:
+      `mv`, then fixed the two absolute gitdir pointers (`main/.git`,
+      `.bare/worktrees/main/gitdir`); GitHub repo renamed; origin remote updated;
+      `git worktree list` + fetch verified.
+- [x] **project-status updated for the rename** — `repos.yml` entry + the daily
+      routine's `sources` both `ai-builder` → `create-ai-builder`
+      (`enabled: false` preserved). Committed `88db225`.
+- [ ] Remaining: surgical machinery strip → regenerate → verify (Parts A–C).
+
+**Approach: transform `create-ai-builder/main` in place** (it's the working
+worktree). Work on a branch if you want a reviewable diff before merging to main.
 
 ## Terminology (read first — these are three different things)
 
@@ -20,26 +34,49 @@ generator reproduces the very subsystem it was extracted from.
 "Task-free ai-builder" means **machinery removed, content preserved** — not a
 repo with no tasks. It is a swap of the engine while keeping the cargo.
 
-## Part A — Prepare the task-free ai-builder (machinery out, content kept)
+## Part A — Strip the machinery in place (content + pipeline kept)
 
-- [ ] Create the task-free ai-builder variant (new branch/worktree or repo).
-- [ ] Set aside the **task content** (all task directories under every epic +
-      the `projects/` tree) — do not delete.
-- [ ] Remove only the **human-core machinery** the generator will replace: the
-      core scripts, templates, `classes.md`, `project/tasks/README.md`.
-- [ ] **Keep the pipeline scripts** (`new-pipeline-*`, `set-current-job`,
-      `advance-pipeline`, `check-stop-after`, `on-task-complete`) — under the
-      decided option (b) these stay hand-maintained (see pipeline note).
-- [ ] Update ai-builder's `CLAUDE.md` / `bootstrap` references pointing at the
-      old core `project/tasks/scripts/` paths.
+**Exact file classification** (from `create-ai-builder/main/project/tasks/scripts/`,
+inventoried 2026-07-24). `project/tasks/scripts/` intermingles three kinds:
+
+**REMOVE — core task machinery** (the generator re-emits these, decoupled):
+`complete-subtask.sh` `complete-task.sh` `delete-task.sh` `insert-subtask.sh`
+`is-last-task.sh` `is-top-level.sh` `list-tasks.sh` `list-tasks.md` `move-task.sh`
+`new-epic.sh` `new-user-subtask.sh` `new-user-task.sh` `next-subtask.sh`
+`rename-subtask.sh` `reorder-subtasks.py` `restore-task.sh` `show-task.sh`
+`subtasks-complete.sh` `task-id-helpers.sh` `task-json-helpers.sh`
+`user-subtask-template.md` `user-task-template.md` `wont-do-subtask.sh`
+— plus `list-projects.sh` `new-project.sh` (re-emitted by `--with-projects`).
+Also remove machinery docs / `project/tasks/README.md` / `project/README.md`
+(regenerated). **Note:** ai-builder has **no** `task-env.sh`/`task-config.sh` —
+it's the pre-refactor ancestor; regeneration introduces them.
+
+**⚠️ KEEP — pipeline machinery** (hand-maintained per option b, NOT generated):
+`advance-pipeline.sh` `check-stop-after.sh` `new-pipeline-build.sh`
+`new-pipeline-subtask.sh` `on-task-complete.sh` `set-current-job.sh`
+`pipeline-build-template.md`
+
+**KEEP — content** (irreplaceable): every task dir under `project/tasks/main/`
+(and any other epics), `project/tasks/classes.md` (8 real classes),
+`project/status/*.md` + `project/reviews/*.md` (dated artifacts),
+`project/projects/` if present.
+
+- [ ] Show the exact `git rm` list (core machinery only) for review BEFORE deleting
+      — the pipeline files live in the same dir, so a wildcard would be wrong.
+- [ ] Remove the core-machinery files listed above; leave the 7 pipeline files.
+- [ ] Update `CLAUDE.md` / `bootstrap` references that point at old core paths
+      (esp. anything assuming the pre-refactor `../../..` root or hardcoded literals).
 
 ## Part B — Generate machinery + reattach content
 
-- [ ] Run `generate.sh` against the task-free ai-builder with mount
-      `project/tasks` and the layers ai-builder uses
-      (`--with-classes --with-projects --with-worktree-guard`, **no
-      `--with-pipeline`** — option b).
-- [ ] Reattach the preserved task content under the generated epic status folders.
+- [ ] Run `generate.sh` against `create-ai-builder/main`, mount `project/tasks`,
+      with the layers it uses — likely **all** of them since it's the origin repo:
+      `--with-classes --with-projects --with-status --with-worktree-guard
+      --with-skill`, **no `--with-pipeline`** (option b). Confirm `--with-projects`
+      is wanted (does `project/projects/` exist?) during execution.
+- [ ] Content is preserved in place (the generator is non-destructive: it
+      overwrites machinery, never the existing epic/classes/status content), so
+      "reattach" = verify the generated scripts read the untouched content.
 
 ## Task-content migration — first-order concern
 
