@@ -1,3 +1,4 @@
+<!-- task-system:begin -->
 ## Task tracking
 
 This repo tracks work in a Markdown task system under `{{TASKS_REL}}/`.
@@ -11,3 +12,4 @@ This repo tracks work in a Markdown task system under `{{TASKS_REL}}/`.
 - **Full procedure:** the `task-system` skill, or
   [`{{TASKS_REL}}/docs/USING.md`]({{TASKS_REL}}/docs/USING.md) — consult it
   before creating, ordering, or closing tasks. Do not restate that procedure here.
+<!-- task-system:end -->

@@ -159,9 +159,19 @@ D="$SANDBOX/kernel"; newrepo "$D"; printf '# Existing\n\nhouse rules\n' > "$D/CL
 "$GEN" --target-repo "$D" --inject-claude-md >/dev/null 2>&1
 grep -q '## Task tracking' "$D/CLAUDE.md";  t $? "kernel appended"
 grep -q 'house rules' "$D/CLAUDE.md";       t $? "existing content preserved"
+grep -qF '<!-- task-system:begin -->' "$D/CLAUDE.md" && grep -qF '<!-- task-system:end -->' "$D/CLAUDE.md"
+t $? "sentinel markers present (begin + end)"
 L1=$(wc -l < "$D/CLAUDE.md")
 "$GEN" --target-repo "$D" --inject-claude-md >/dev/null 2>&1
 [[ "$L1" == "$(wc -l < "$D/CLAUDE.md")" ]]; t $? "re-inject idempotent (no duplicate section)"
+BC=$(grep -cF '<!-- task-system:begin -->' "$D/CLAUDE.md")
+[[ "$BC" == "1" ]];                         t $? "exactly one begin marker after double-inject"
+# drift: hand-edit inside the block, then re-inject -> refreshed in place
+perl -0pi -e 's/(<!-- task-system:begin -->\n)/$1DRIFT LINE\n/' "$D/CLAUDE.md"
+grep -q 'DRIFT LINE' "$D/CLAUDE.md"; t $? "  (setup) drift line injected into block"
+"$GEN" --target-repo "$D" --inject-claude-md >/dev/null 2>&1
+! grep -q 'DRIFT LINE' "$D/CLAUDE.md";      t $? "drifted block refreshed in place (in-place update)"
+grep -q 'house rules' "$D/CLAUDE.md";       t $? "content outside block still preserved after refresh"
 KL=$(grep -c . "$D/CLAUDE.md")
 [[ $KL -lt 25 ]];                           t $? "always-on cost stays small ($KL non-blank lines)"
 

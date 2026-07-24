@@ -254,14 +254,45 @@ fi
 # ---------------------------------------------------------------------------
 # 4. CLAUDE.md kernel snippet
 # ---------------------------------------------------------------------------
+# The snippet carries its own <!-- task-system:begin/end --> markers, so the
+# injected block is locatable and refreshable. On --inject-claude-md we REPLACE
+# in place when the begin marker is already present (updatable, never duplicated),
+# and APPEND otherwise. Same begin/end-marker convention as
+# project-status/setup-new-repo.sh.
+CM_BEGIN="<!-- task-system:begin -->"
+CM_END="<!-- task-system:end -->"
 SNIPPET="$(render "$SRC_DIR/snippets/claude-md.snippet.md" /dev/stdout)"
 if [[ "$INJECT_CLAUDE_MD" == true ]]; then
     CMD_FILE="$TARGET/CLAUDE.md"
-    if [[ -f "$CMD_FILE" ]] && grep -q "^## Task tracking" "$CMD_FILE"; then
-        skipped+=("CLAUDE.md  (already has a '## Task tracking' section)")
+    if [[ -f "$CMD_FILE" ]] && grep -qF "$CM_BEGIN" "$CMD_FILE"; then
+        # Replace everything between begin/end (inclusive) with the current snippet.
+        # Python, not sed/awk: the multi-line replacement is passed safely via a
+        # file, and BSD awk chokes on newlines in -v (see setup-new-repo.sh).
+        printf '%s\n' "$SNIPPET" > "$MOUNT/.claude-md-snippet.tmp"
+        python3 - "$CMD_FILE" "$MOUNT/.claude-md-snippet.tmp" "$CM_BEGIN" "$CM_END" <<'PY'
+import sys, pathlib
+claude_path, repl_path, begin, end = sys.argv[1:5]
+repl = pathlib.Path(repl_path).read_text().rstrip("\n")
+out, in_block, printed = [], False, False
+for line in pathlib.Path(claude_path).read_text().splitlines():
+    if line == begin:
+        in_block = True
+        if not printed:
+            out.append(repl)   # the snippet already includes begin+end markers
+            printed = True
+        continue
+    if line == end:
+        in_block = False
+        continue
+    if not in_block:
+        out.append(line)
+pathlib.Path(claude_path).write_text("\n".join(out) + "\n")
+PY
+        rm -f "$MOUNT/.claude-md-snippet.tmp"
+        updated+=("CLAUDE.md  (task-tracking block refreshed in place)")
     else
         printf '\n%s\n' "$SNIPPET" >> "$CMD_FILE"
-        updated+=("CLAUDE.md  (kernel snippet appended)")
+        updated+=("CLAUDE.md  (task-tracking block appended)")
     fi
 fi
 
