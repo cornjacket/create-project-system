@@ -5,18 +5,29 @@ generator is validated against `tasks-test/`.
 
 **Do not start until tasks 05–06 pass.**
 
-## Open questions to resolve first
+## Decisions (from the option-B discussion)
 
-- [ ] Confirm the target repo path and the desired mount dir inside it
-      (e.g. `tasks/` vs `pm/tasks/` vs `.tasks/`).
-- [ ] Which optional layers does second-brain want? (classes / projects /
-      worktree-guard) — likely projects for long-running notes work; confirm.
-- [ ] Decide `--inject-claude-md` vs. manual snippet placement for second-brain's
-      existing agent instructions.
+- **Mount:** `project/tasks` — grows a `project/` workspace with `tasks/` +
+  `status/` siblings. second-brain's pre-commit hook already exempts `tasks/`,
+  and top-level machinery stays out of `vault/` (so task READMEs are never
+  embedded into the semantic cache).
+- **Layers:** `--with-status --with-skill`. **No** `--with-projects` — the word
+  collides with second-brain's PARA `vault/projects/`. **No** classes/guard
+  (single-workspace repo, no worktrees).
+- **CLAUDE.md:** manual, not `--inject-claude-md` — second-brain's CLAUDE.md is
+  tightly curated with sentinel blocks; hand-place the 1–2 line pointer.
+
+## Still to confirm before running
+
+- [ ] Reconcile the container `project/README.md` with anything second-brain
+      already keeps at that path (none today).
+- [ ] Confirm the brain's `install_skill.py` doesn't also manage
+      `.claude/skills/` (different mechanism — verify no overlap).
 
 ## Steps
 
-- [ ] Run `generate.sh` against second-brain with the confirmed flags + mount.
+- [ ] Run:
+      `generate.sh --target-repo /Users/david/second-brain --tasks-dir project/tasks --epic main --with-status --with-skill`
 - [ ] Smoke-test the scripts from the second-brain root.
 - [ ] Commit the generated subsystem in second-brain (separate from this repo).
 

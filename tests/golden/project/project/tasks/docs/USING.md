@@ -7,7 +7,7 @@ truth** for how to work the task system — the `task-system` skill and the
 For the structural reference (metadata field tables, directory format), see
 [`README.md`](README.md) alongside this file.
 
-Scripts live in `tasks/scripts/` and are run **from the repo root**.
+Scripts live in `project/tasks/scripts/` and are run **from the repo root**.
 
 ---
 
@@ -20,7 +20,7 @@ their parent. A four-digit `NNNN` in a subtask's name defines its
 All of this is maintained by the scripts — never by hand.
 
 ```
-tasks/
+project/tasks/
     <epic>/
         inbox/        # raw ideas, not yet evaluated
         draft/        # being written up
@@ -109,33 +109,33 @@ Top-level tasks move between status folders. **Subtask status is binary**: `—`
 
 ```bash
 # Top-level task
-tasks/scripts/new-user-task.sh --folder draft --name my-feature
+project/tasks/scripts/new-user-task.sh --folder draft --name my-feature
 
 # Subtask (parent is the task's full directory name)
-tasks/scripts/new-user-subtask.sh --folder draft \
+project/tasks/scripts/new-user-subtask.sh --folder draft \
     --parent a3f2c1-my-feature --name design-review
 
 # A new epic (creates all six status folders)
-tasks/scripts/new-epic.sh --name main
+project/tasks/scripts/new-epic.sh --name main
 ```
 
 ### Viewing
 
 ```bash
 # Outstanding work in one status folder, with subtasks
-tasks/scripts/list-tasks.sh --folder backlog --depth 2
+project/tasks/scripts/list-tasks.sh --folder backlog --depth 2
 
 # Order by priority: HIGH → MED → LOW → unset
-tasks/scripts/list-tasks.sh --folder backlog --sort-priority
+project/tasks/scripts/list-tasks.sh --folder backlog --sort-priority
 
 # Everything including completed
-tasks/scripts/list-tasks.sh --all
+project/tasks/scripts/list-tasks.sh --all
 
 # One task's README
-tasks/scripts/show-task.sh --folder in-progress --name a3f2c1-my-feature
+project/tasks/scripts/show-task.sh --folder in-progress --name a3f2c1-my-feature
 
 # Path of the next incomplete subtask (exit 1 if all done)
-tasks/scripts/next-subtask.sh --folder in-progress --parent a3f2c1-my-feature
+project/tasks/scripts/next-subtask.sh --folder in-progress --parent a3f2c1-my-feature
 ```
 
 > Don't run `list-tasks.sh` without `--folder` when asked for *outstanding*
@@ -145,43 +145,43 @@ tasks/scripts/next-subtask.sh --folder in-progress --parent a3f2c1-my-feature
 
 ```bash
 # Start work: move to in-progress
-tasks/scripts/move-task.sh --name a3f2c1-my-feature --from backlog --to in-progress
+project/tasks/scripts/move-task.sh --name a3f2c1-my-feature --from backlog --to in-progress
 
 # Finish a subtask (marks [x], renames dir with X-)
-tasks/scripts/complete-task.sh --folder in-progress \
+project/tasks/scripts/complete-task.sh --folder in-progress \
     --parent a3f2c1-my-feature --name a3f2c1-0000-design-review
 
 # Finish the task itself (moves it to complete/)
-tasks/scripts/complete-task.sh --folder in-progress --name a3f2c1-my-feature
+project/tasks/scripts/complete-task.sh --folder in-progress --name a3f2c1-my-feature
 
 # Undo either
-tasks/scripts/complete-task.sh --folder in-progress --name a3f2c1-my-feature --undo
+project/tasks/scripts/complete-task.sh --folder in-progress --name a3f2c1-my-feature --undo
 ```
 
 ### Restructuring
 
 ```bash
 # Insert a subtask at position 0003, shifting later ones up
-tasks/scripts/insert-subtask.sh --folder in-progress \
+project/tasks/scripts/insert-subtask.sh --folder in-progress \
     --parent a3f2c1-my-feature --at 0003 --name new-step
 
 # Renumber a subtask
-tasks/scripts/rename-subtask.sh --folder in-progress \
+project/tasks/scripts/rename-subtask.sh --folder in-progress \
     --parent a3f2c1-my-feature --name a3f2c1-0003-my-sub --new-id 0005
 
 # Reorder wholesale (pass base names in the desired order)
-python3 tasks/scripts/reorder-subtasks.py --task-dir <path> --apply name-a name-b ...
+python3 project/tasks/scripts/reorder-subtasks.py --task-dir <path> --apply name-a name-b ...
 ```
 
 ### Removing
 
 ```bash
 # Soft-delete (hides the directory, drops it from the parent list)
-tasks/scripts/delete-task.sh --folder draft --name a3f2c1-my-feature
-tasks/scripts/restore-task.sh --folder draft --name a3f2c1-my-feature
+project/tasks/scripts/delete-task.sh --folder draft --name a3f2c1-my-feature
+project/tasks/scripts/restore-task.sh --folder draft --name a3f2c1-my-feature
 
 # Decided against, but keep it for the record
-tasks/scripts/wont-do-subtask.sh --folder in-progress \
+project/tasks/scripts/wont-do-subtask.sh --folder in-progress \
     --parent a3f2c1-my-feature --name a3f2c1-0002-abandoned-idea
 ```
 
@@ -191,25 +191,25 @@ tasks/scripts/wont-do-subtask.sh --folder in-progress \
 
 ```bash
 # 1. Create the task
-tasks/scripts/new-user-task.sh --folder draft --name add-search
-#    -> tasks/main/draft/7f21ab-add-search/
+project/tasks/scripts/new-user-task.sh --folder draft --name add-search
+#    -> project/tasks/main/draft/7f21ab-add-search/
 
 # 2. Fill in Goal and Context (edit the README's prose sections only)
 
 # 3. Plan subtasks in order — last one is always docs
-tasks/scripts/new-user-subtask.sh --folder draft --parent 7f21ab-add-search --name design-index
-tasks/scripts/new-user-subtask.sh --folder draft --parent 7f21ab-add-search --name implement-query
-tasks/scripts/new-user-subtask.sh --folder draft --parent 7f21ab-add-search --name update-docs
+project/tasks/scripts/new-user-subtask.sh --folder draft --parent 7f21ab-add-search --name design-index
+project/tasks/scripts/new-user-subtask.sh --folder draft --parent 7f21ab-add-search --name implement-query
+project/tasks/scripts/new-user-subtask.sh --folder draft --parent 7f21ab-add-search --name update-docs
 
 # 4. Get approval on the plan, then start
-tasks/scripts/move-task.sh --name 7f21ab-add-search --from draft --to in-progress
+project/tasks/scripts/move-task.sh --name 7f21ab-add-search --from draft --to in-progress
 
 # 5. Work subtasks in NNNN order, completing each before the next
-tasks/scripts/complete-task.sh --folder in-progress \
+project/tasks/scripts/complete-task.sh --folder in-progress \
     --parent 7f21ab-add-search --name 7f21ab-0000-design-index
 
 # 6. When all subtasks are [x], confirm with the owner, then close
-tasks/scripts/complete-task.sh --folder in-progress --name 7f21ab-add-search
+project/tasks/scripts/complete-task.sh --folder in-progress --name 7f21ab-add-search
 ```
 
 ---
@@ -222,12 +222,12 @@ These commands exist only if the corresponding layer was installed.
 
 Groups tasks that touch the same files, so different groups can be worked in
 parallel without conflicting. Valid values are the **Worktree branch** names
-declared in `tasks/classes.md`; `unclassified` is always accepted.
+declared in `project/tasks/classes.md`; `unclassified` is always accepted.
 
 ```bash
-tasks/scripts/new-user-task.sh --folder draft --name my-feature --category docs
-tasks/scripts/list-tasks.sh --folder backlog --category docs
-tasks/scripts/list-tasks.sh --folder backlog --group-by-category --sort-priority
+project/tasks/scripts/new-user-task.sh --folder draft --name my-feature --category docs
+project/tasks/scripts/list-tasks.sh --folder backlog --category docs
+project/tasks/scripts/list-tasks.sh --folder backlog --group-by-category --sort-priority
 ```
 
 If this layer is installed, set a task's category at creation; don't leave it `—`.
@@ -237,8 +237,8 @@ If this layer is installed, set a task's category at creation; don't leave it `�
 For services spanning many pieces of work, each with its own epic:
 
 ```bash
-tasks/scripts/new-project.sh --name my-service
-tasks/scripts/list-projects.sh
+project/tasks/scripts/new-project.sh --name my-service
+project/tasks/scripts/list-projects.sh
 ```
 
 ### Status reports
@@ -247,24 +247,24 @@ Installed with `--with-status`. A `status/` sibling of the tasks mount holds
 periodic **delta** reports — each a narrative synthesis of what shipped since
 the previous report, not a daily log and not tied to session boundaries.
 
-**At the start of a session, read the most recent report** (`status/`)
+**At the start of a session, read the most recent report** (`project/status/`)
 to see where things left off.
 
 **Writing one.** When the operator says **"write a status report"** (or a
 variant: "status report", "draft a status report", "write status", "write up
 the period"):
 
-1. Identify the period since the most recent report in `status/`.
+1. Identify the period since the most recent report in `project/status/`.
 2. Synthesize what shipped during that period — drawing on the git history and
    completed tasks, but as a narrative of themes and outcomes, *not* a line-by-line
    replay of `git log`.
-3. Write it to `status/YYYY-MM-DD.md` (the date is the report's as-of
+3. Write it to `project/status/YYYY-MM-DD.md` (the date is the report's as-of
    date), with these sections:
    - **Work Completed** — what shipped, as narrative.
    - **Work In Progress** — what is open and where it stands.
    - **Next Up** — what comes after, and why.
    - **Key Decisions** — non-obvious decisions worth carrying forward.
-4. Add a row to the top of the log table in `status/README.md`.
+4. Add a row to the top of the log table in `project/status/README.md`.
 5. Commit if requested.
 
 Reports are produced on operator request, not at session end — cadence is
@@ -276,7 +276,7 @@ the primary worktree only; they are a coordination artifact, not per-worktree st
 Blocks worktree removal until a task and all its subtasks are complete:
 
 ```bash
-python3 check-task-complete.py tasks/<epic> <branch-name>
+python3 check-task-complete.py project/tasks/<epic> <branch-name>
 ```
 
 Exit `0` complete · `1` incomplete (blocks) · `2` no matching task (allows).

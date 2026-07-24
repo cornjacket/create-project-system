@@ -84,7 +84,7 @@ LEAK=$(grep -rl 'project/tasks' "$A/tasks/scripts" 2>/dev/null | wc -l | tr -d '
 [[ "$LEAK" == "0" ]];                              t $? "zero 'project/tasks' literals in emitted scripts"
 LEAK=$(grep -rl '\.\./\.\./\.\.' "$A/tasks/scripts" 2>/dev/null | wc -l | tr -d ' ')
 [[ "$LEAK" == "0" ]];                              t $? "zero '../../..' root walks in emitted scripts"
-GENPH=$(grep -rl '{{TASKS_REL}}\|{{DEFAULT_EPIC}}\|{{PROJECTS_REL}}\|{{PROJECTS_REL_LINE}}' "$A/tasks" 2>/dev/null | wc -l | tr -d ' ')
+GENPH=$(grep -rl '{{TASKS_REL}}\|{{DEFAULT_EPIC}}\|{{PROJECTS_REL}}\|{{PROJECTS_REL_LINE}}\|{{STATUS_REL}}\|{{CONTAINER_REL}}\|{{TASKS_BASE}}' "$A/tasks" 2>/dev/null | wc -l | tr -d ' ')
 [[ "$GENPH" == "0" ]];                             t $? "generator-time placeholders fully rendered"
 grep -q '{{NAME}}' "$A/tasks/scripts/user-task-template.md"; t $? "runtime placeholders survive in templates"
 
@@ -92,12 +92,20 @@ grep -q '{{NAME}}' "$A/tasks/scripts/user-task-template.md"; t $? "runtime place
 section "3. All layers (nested mount, custom epic)"
 B="$SANDBOX/layers"; newrepo "$B"
 "$GEN" --target-repo "$B" --tasks-dir pm/tasks --epic dev \
-    --with-classes --with-projects --with-worktree-guard --with-skill >/dev/null 2>&1
+    --with-classes --with-projects --with-status --with-worktree-guard --with-skill >/dev/null 2>&1
 [[ -f "$B/pm/tasks/classes.md" ]];                     t $? "classes layer emitted"
 [[ -f "$B/pm/tasks/scripts/new-project.sh" ]];         t $? "projects layer emitted"
 [[ -f "$B/pm/tasks/scripts/check-task-complete.py" ]]; t $? "worktree-guard emitted"
 [[ -f "$B/.claude/skills/task-system/SKILL.md" ]];     t $? "skill emitted to .claude/skills/"
 grep -q 'PROJECTS_REL="pm/projects"' "$B/pm/tasks/scripts/task-config.sh"; t $? "PROJECTS_REL derived (pm/tasks -> pm/projects)"
+# status layer: sibling status/ + container README (pm/ workspace)
+[[ -f "$B/pm/status/README.md" ]];                     t $? "status layer emitted (pm/status, sibling of tasks)"
+[[ -f "$B/pm/README.md" ]];                            t $? "container README emitted (pm/ workspace)"
+grep -q 'pm/tasks/docs/USING.md' "$B/pm/README.md";    t $? "container README points at tasks docs"
+grep -q 'pm/tasks/docs/USING.md' "$B/pm/status/README.md"; t $? "status README points at the workflow in USING.md"
+grep -q 'Status reports' "$B/pm/tasks/docs/USING.md";  t $? "USING.md carries the status-report workflow"
+STLEAK=$(grep -rl '{{STATUS_REL}}\|{{CONTAINER_REL}}\|{{TASKS_BASE}}' "$B/pm" 2>/dev/null | wc -l | tr -d ' ')
+[[ "$STLEAK" == "0" ]];                                t $? "status placeholders fully rendered"
 grep -qE '^\| Category' "$B/pm/tasks/scripts/user-task-template.md"; t $? "Category row present (classes on)"
 lifecycle "$B" pm/tasks dev "nested:"
 ( cd "$B" && "$B/pm/tasks/scripts/new-project.sh" --name svc >/dev/null 2>&1 )

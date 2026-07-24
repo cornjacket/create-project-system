@@ -185,6 +185,21 @@ seam (see §3.5) in case that decision changes.
    pipeline-build template, PIPELINE-SUBTASK support. Do not build now; keep the
    source isolated so it can be added later without disturbing the core.
 
+**Scope widened (2026-07-23, task 10 — option B):** the original analysis looked
+only at `project/tasks/`, but ai-builder's `project/` is a four-pillar PM
+workspace — `tasks/` + `status/` + `reviews/` + project-level `scripts/`. The
+generator now reproduces the **workspace**, not just the tasks pillar (hence the
+`create-task-system` → `create-project-system` rename):
+
+6. **`--with-status` (in scope, built).** A `status/` sibling of the tasks mount
+   holding periodic delta status reports, plus a container `README.md` for the
+   `project/` workspace. Ships **no scripts** — a status report is a convention +
+   an agent workflow (authoritative copy in `docs/USING.md`).
+7. **`reviews/` (excluded).** Never fully designed upstream (README: "artifact
+   format not yet finalised"; empty log). Nothing reusable to emit.
+8. **Project-level `scripts/` (excluded).** Empty upstream (its only script,
+   `log-add.sh`, was retired). Nothing to copy.
+
 ---
 
 ## 5. Proposed generator architecture

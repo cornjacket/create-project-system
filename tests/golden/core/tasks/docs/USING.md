@@ -241,6 +241,36 @@ tasks/scripts/new-project.sh --name my-service
 tasks/scripts/list-projects.sh
 ```
 
+### Status reports
+
+Installed with `--with-status`. A `status/` sibling of the tasks mount holds
+periodic **delta** reports — each a narrative synthesis of what shipped since
+the previous report, not a daily log and not tied to session boundaries.
+
+**At the start of a session, read the most recent report** (`status/`)
+to see where things left off.
+
+**Writing one.** When the operator says **"write a status report"** (or a
+variant: "status report", "draft a status report", "write status", "write up
+the period"):
+
+1. Identify the period since the most recent report in `status/`.
+2. Synthesize what shipped during that period — drawing on the git history and
+   completed tasks, but as a narrative of themes and outcomes, *not* a line-by-line
+   replay of `git log`.
+3. Write it to `status/YYYY-MM-DD.md` (the date is the report's as-of
+   date), with these sections:
+   - **Work Completed** — what shipped, as narrative.
+   - **Work In Progress** — what is open and where it stands.
+   - **Next Up** — what comes after, and why.
+   - **Key Decisions** — non-obvious decisions worth carrying forward.
+4. Add a row to the top of the log table in `status/README.md`.
+5. Commit if requested.
+
+Reports are produced on operator request, not at session end — cadence is
+flexible (weekly, twice-weekly, daily). In a worktree layout, write them from
+the primary worktree only; they are a coordination artifact, not per-worktree state.
+
 ### Worktree completion guard
 
 Blocks worktree removal until a task and all its subtasks are complete:

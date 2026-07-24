@@ -37,3 +37,7 @@ tasks/
 
 Start with `list-tasks.sh --folder <status> --depth 2` to see where things stand,
 then consult `USING.md` for the command you need.
+
+If a `status/` sibling exists, this repo also keeps periodic status reports; read
+the most recent one to pick up context, and see the **Status reports** section of
+`USING.md` for the "write a status report" workflow.

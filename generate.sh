@@ -10,6 +10,8 @@
 #   --epic <name>            Starter epic (default: main)
 #   --with-classes           Worktree categories (classes.md + Category field)
 #   --with-projects          Long-running projects (new-project.sh, list-projects.sh)
+#   --with-status            Status-report subsystem: a status/ sibling of the
+#                            tasks mount + a container README (project/ workspace)
 #   --with-worktree-guard    check-task-complete.py removal guard
 #   --with-skill             Emit .claude/skills/task-system/ (Claude on-demand skill)
 #   --inject-claude-md       Append the kernel snippet to the target's CLAUDE.md
@@ -38,12 +40,13 @@ TASKS_DIR="tasks"
 EPIC="main"
 WITH_CLASSES=false
 WITH_PROJECTS=false
+WITH_STATUS=false
 WITH_GUARD=false
 WITH_SKILL=false
 INJECT_CLAUDE_MD=false
 FORCE=false
 
-usage() { sed -n '2,30p' "${BASH_SOURCE[0]}" | sed 's/^# \{0,1\}//'; }
+usage() { sed -n '2,29p' "${BASH_SOURCE[0]}" | sed 's/^# \{0,1\}//'; }
 
 while [[ $# -gt 0 ]]; do
     case "$1" in
@@ -52,6 +55,7 @@ while [[ $# -gt 0 ]]; do
         --epic)               EPIC="$2"; shift 2 ;;
         --with-classes)       WITH_CLASSES=true; shift ;;
         --with-projects)      WITH_PROJECTS=true; shift ;;
+        --with-status)        WITH_STATUS=true; shift ;;
         --with-worktree-guard) WITH_GUARD=true; shift ;;
         --with-skill)         WITH_SKILL=true; shift ;;
         --inject-claude-md)   INJECT_CLAUDE_MD=true; shift ;;
@@ -79,10 +83,18 @@ if [[ -z "$TASKS_DIR" ]]; then
     exit 1
 fi
 
-# Projects mount: sibling of the tasks mount (tasks -> projects,
-# project/tasks -> project/projects). Mirrors task-env.sh's own derivation.
+# Sibling mounts derived from the tasks mount, mirroring task-env.sh:
+#   tasks         -> projects,      status         (siblings at repo root)
+#   project/tasks -> project/projects, project/status (siblings in a container)
+# CONTAINER_REL is the parent dir of the tasks mount (the project/ workspace),
+# or "." when the tasks mount sits at the repo root. TASKS_BASE is its leaf name.
 _parent="$(dirname "$TASKS_DIR")"
-if [[ "$_parent" == "." ]]; then PROJECTS_REL="projects"; else PROJECTS_REL="$_parent/projects"; fi
+TASKS_BASE="$(basename "$TASKS_DIR")"
+if [[ "$_parent" == "." ]]; then
+    PROJECTS_REL="projects"; STATUS_REL="status"; CONTAINER_REL="."
+else
+    PROJECTS_REL="$_parent/projects"; STATUS_REL="$_parent/status"; CONTAINER_REL="$_parent"
+fi
 
 if ! git -C "$TARGET" rev-parse --git-dir >/dev/null 2>&1; then
     echo "Note: $TARGET is not a git repo. The scripts will fall back to a"
@@ -102,6 +114,7 @@ created=(); updated=(); skipped=()
 #
 # TWO PLACEHOLDER NAMESPACES — do not conflate them:
 #   generator-time : {{TASKS_REL}} {{DEFAULT_EPIC}} {{PROJECTS_REL}}
+#                    {{STATUS_REL}} {{CONTAINER_REL}} {{TASKS_BASE}}
 #                    {{PROJECTS_REL_LINE}}   -> substituted here, must not survive.
 #   runtime        : {{NAME}} {{STATUS}} {{EPIC}} {{TAGS}} {{PRIORITY}}
 #                    {{PARENT}} {{CREATED}} {{CATEGORY}}
@@ -113,6 +126,9 @@ render() {
     sed -e "s|{{TASKS_REL}}|$TASKS_DIR|g" \
         -e "s|{{DEFAULT_EPIC}}|$EPIC|g" \
         -e "s|{{PROJECTS_REL}}|$PROJECTS_REL|g" \
+        -e "s|{{STATUS_REL}}|$STATUS_REL|g" \
+        -e "s|{{CONTAINER_REL}}|$CONTAINER_REL|g" \
+        -e "s|{{TASKS_BASE}}|$TASKS_BASE|g" \
         "$1" > "$2"
 }
 
@@ -198,6 +214,26 @@ if [[ "$WITH_CLASSES" == true ]]; then
     seed "$SRC_DIR/layers/classes/classes.md" "$MOUNT/classes.md"
 fi
 
+# Status subsystem. Both the log README and the container README are CONTENT
+# (the user grows the log table and may customize the workspace overview), so
+# they are seeded, never clobbered. The full workflow lives in docs/USING.md
+# (machinery), so these stubs stay thin and the convention stays single-source.
+if [[ "$WITH_STATUS" == true ]]; then
+    STATUS_OUT="$TARGET/$STATUS_REL"
+    mkdir -p "$STATUS_OUT"
+    seed "$SRC_DIR/layers/status/README.md" "$STATUS_OUT/README.md"
+    # The container README describes the project/ workspace (tasks + status).
+    # Only emit it when the tasks mount actually sits inside a container dir;
+    # at the repo root there is no container to document (and writing the repo's
+    # own README.md would clobber it).
+    if [[ "$CONTAINER_REL" != "." ]]; then
+        seed "$SRC_DIR/layers/status/container-README.md" "$TARGET/$CONTAINER_REL/README.md"
+    else
+        echo "Note: --with-status at the repo root emits '$STATUS_REL/' but no"
+        echo "      container README (there is no project/ dir to document)."
+    fi
+fi
+
 if [[ "$WITH_SKILL" == true ]]; then
     SKILL_OUT="$TARGET/.claude/skills/task-system"
     mkdir -p "$SKILL_OUT"
@@ -239,12 +275,15 @@ if [[ ${#skipped[@]} -gt 0 ]]; then
 fi
 
 echo ""
-echo "Layers: classes=$WITH_CLASSES projects=$WITH_PROJECTS guard=$WITH_GUARD skill=$WITH_SKILL"
+echo "Layers: classes=$WITH_CLASSES projects=$WITH_PROJECTS status=$WITH_STATUS guard=$WITH_GUARD skill=$WITH_SKILL"
 echo ""
 echo "Next:"
 echo "  $TASKS_DIR/scripts/new-user-task.sh --folder draft --name my-first-task"
 echo "  $TASKS_DIR/scripts/list-tasks.sh --folder draft --depth 2"
 echo "  Docs: $TASKS_DIR/docs/USING.md"
+if [[ "$WITH_STATUS" == true ]]; then
+    echo "  Status reports: $STATUS_REL/  (workflow in $TASKS_DIR/docs/USING.md)"
+fi
 if [[ "$WITH_GUARD" == true ]]; then
     echo ""
     echo "  Worktree guard — note the first argument is the EPIC dir, not the mount:"

@@ -7,11 +7,11 @@ description: Create, plan, progress, or close tasks and subtasks in this repo's 
 
 This repo tracks work in a filesystem-native Markdown task system: every task is
 a directory with a `README.md`, managed **only** through the scripts in
-`{{TASKS_REL}}/scripts/` (run from the repo root).
+`project/tasks/scripts/` (run from the repo root).
 
 ## Before doing anything
 
-**Read `{{TASKS_REL}}/docs/USING.md`** (path is relative to the repo root) — it
+**Read `project/tasks/docs/USING.md`** (path is relative to the repo root) — it
 is the single source of truth for this system: task types, the `NNNN` ordering
 contract, the status model, the full command reference, and the operating rules.
 This skill deliberately does not restate it, so there is exactly one copy to keep
@@ -29,7 +29,7 @@ script has created the file.
 ## Orientation
 
 ```
-{{TASKS_REL}}/
+project/tasks/
     <epic>/{inbox,draft,backlog,in-progress,complete,wont-do}/
     scripts/     # all task management commands
     docs/        # USING.md (how to operate) + README.md (format reference)

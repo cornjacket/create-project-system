@@ -51,6 +51,35 @@ layer's scripts are installed).
 
 ---
 
+## `status/` — `--with-status` (project workspace: status reports)
+
+**Emits (both CONTENT — seeded, never clobbered):**
+- `README.md` → `<status-mount>/README.md` — a thin log-table stub. The
+  authoritative "write a status report" workflow lives in `docs/USING.md`
+  (machinery), so this stub stays single-source and doesn't drift.
+- `container-README.md` → `<container>/README.md` — overview of the `project/`
+  workspace (tasks + status). **Emitted only when the tasks mount sits inside a
+  container dir**; at the repo root there is no container to document (and
+  writing the repo's own `README.md` would clobber it).
+
+**Mount:** `STATUS_REL` is a sibling of the tasks mount, mirroring `projects`:
+
+| `TASKS_REL` | derived `STATUS_REL` | container README |
+|---|---|---|
+| `tasks` | `status` | *(skipped — no container)* |
+| `project/tasks` | `project/status` | `project/README.md` |
+
+This is the canonical **option-B** layout: mount at `project/tasks --with-status`
+so the target grows a `project/` workspace with `tasks/` + `status/` siblings.
+
+Unlike the other layers, this one ships **no scripts** — a status report is a
+convention + an agent workflow (documented in `USING.md` and mirrored in the
+skill), not a command. `reviews/` and the empty `project/scripts/` from the
+original ai-builder workspace are intentionally **not** extracted (reviews was
+never fully designed; the scripts dir held nothing).
+
+---
+
 ## `worktree-guard/` — `--with-worktree-guard`
 
 **Emits:** `check-task-complete.py` → the target's bootstrap/hook location.

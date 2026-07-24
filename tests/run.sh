@@ -26,22 +26,24 @@ GOLDEN="$REPO/tests/golden"
 UPDATE=false
 [[ "${1:-}" == "--update" ]] && UPDATE=true
 
-# name -> generate.sh flags
+# name -> full generate.sh flags (including mount + epic, so a fixture can pin
+# a container layout like project/tasks that differs from the default mount)
 fixture_flags() {
     case "$1" in
-        core)       echo "" ;;
-        all-layers) echo "--with-classes --with-projects --with-worktree-guard --with-skill" ;;
+        core)       echo "--tasks-dir tasks --epic main" ;;
+        all-layers) echo "--tasks-dir tasks --epic main --with-classes --with-projects --with-status --with-worktree-guard --with-skill" ;;
+        project)    echo "--tasks-dir project/tasks --epic main --with-status --with-skill" ;;
         *) echo "UNKNOWN"; return 1 ;;
     esac
 }
-FIXTURES=(core all-layers)
+FIXTURES=(core all-layers project)
 
 # Generate one fixture into $2, stripped of git metadata.
 generate_into() {
     local name="$1" dst="$2"
     ( cd "$dst" && git init -q && git config user.email golden@local && git config user.name golden )
     # shellcheck disable=SC2046
-    "$GEN" --target-repo "$dst" --tasks-dir tasks --epic main $(fixture_flags "$name") >/dev/null 2>&1
+    "$GEN" --target-repo "$dst" $(fixture_flags "$name") >/dev/null 2>&1
     rm -rf "$dst/.git"
 }
 
