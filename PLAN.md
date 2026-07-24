@@ -68,4 +68,7 @@ create-project-system/
 8. [x] [`08-generate-into-captains-log.md`](tasks/08-generate-into-captains-log.md) — roll out to captains-log (after second-brain).
 9. [ ] [`09-generate-into-ai-builder-task-free.md`](tasks/09-generate-into-ai-builder-task-free.md) — task-free `create-ai-builder`, then regenerate. Rename + project-status tracking DONE; surgical strip + regen + verify remain.
 
+12. [ ] [`12-relocate-pipeline-scripts.md`](tasks/12-relocate-pipeline-scripts.md) — move create-ai-builder's 7 pipeline scripts out of the generated mount. **After task 09 is proven.**
+13. [ ] [`13-rename-audit-create-ai-builder.md`](tasks/13-rename-audit-create-ai-builder.md) — rename only the repo-self-references in create-ai-builder (product/history stays). Checked: 912 hits, ~99% stay.
+
 Mark a task `[x]` here when its task file's checklist is fully done.
