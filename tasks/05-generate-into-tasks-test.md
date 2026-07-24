@@ -1,4 +1,12 @@
-# Task 05 — `tasks-test/`: the regeneration / upgrade path
+# Task 05 — `tasks-test/`: the regeneration / upgrade path  ✅ DONE
+
+> **Result:** the upgrade path works. Regenerating over a **committed** install
+> holding real task content produces a **zero-line git diff**, and a one-line
+> change in `src/` propagates as exactly a one-line diff in the target.
+> Verified in both the standard and git-worktree layouts.
+>
+> Repos created: `tasks-test/` (standard) and `tasks-test-wt/` (`.bare` + linked
+> `main/`, mirroring ai-builder).
 
 **Goal:** answer the question nothing else in the plan answers — **what happens
 when you generate over a repo that already has the subsystem installed, with real
@@ -19,41 +27,47 @@ retired cheaply, on a repo nobody depends on.
 
 ## Part A — First install (thin)
 
-- [ ] Create `tasks-test/` (`git init`) as a sibling of `create-task-system/`.
-- [ ] `generate.sh --target-repo ../tasks-test --tasks-dir tasks --epic main`
-- [ ] Smoke-check only: create a task + subtask, list, complete one. (Depth of
-      verification lives in 04b.)
-- [ ] **Commit the generated output** — this is the baseline every later diff is
-      read against.
+- [x] Create `tasks-test/` (`git init`) as a sibling of `create-task-system/`.
+- [x] `generate.sh --target-repo ../tasks-test --tasks-dir tasks --epic main`
+- [x] Smoke-check only: create a task + subtask, list, complete one.
+- [x] **Commit the generated output** — baseline `0cbf5f4`, 36 files.
 
 ## Part B — Regeneration over an existing install
 
 This is the substance of the task.
 
-- [ ] Create real content first: a few tasks across `draft/`, `in-progress/`,
-      `complete/`, at least one with completed (`X-`) subtasks, and a non-default
-      `Next-subtask-id`. Commit it.
-- [ ] Re-run the **same** `generate.sh` command unchanged. Then:
-      - [ ] `git status` / `git diff` — **user task content must be untouched**.
-      - [ ] Machinery may be rewritten, but only where it actually changed.
-      - [ ] Status-folder `README.md` task lists must not be clobbered or reset.
-- [ ] Change something in `src/` (e.g. a script fix), regenerate, and confirm the
-      diff shows **only** that change.
+- [x] Real content created and committed: `design-search` (draft, 3 subtasks, one
+      `X-` complete, `Next-subtask-id: 0003`), `build-indexer` (in-progress),
+      `spike-tokenizer` (complete).
+- [x] Re-ran the **same** command unchanged → **`git status` reported 0 changed
+      files**. Task content, status-folder task lists, and `X-` subtasks all
+      intact; generator reported `= tasks/main/ (epic exists — task content
+      preserved)`.
+- [x] One-line probe added to `src/scripts/show-task.sh`, regenerated → diff was
+      exactly `1 file changed, 2 insertions(+)`, confined to that file. Probe
+      reverted and regenerated → target restored to 0 changed files.
 - [x] **Collision policy — DECIDED and implemented in task 04.** Machinery is
       always overwritten; content (epic/status folders, task lists, `classes.md`)
       is created only if missing, never overwritten. An identical re-run yields a
       zero-line diff. `--force` only re-seeds content. Verify that holds here
       against a *committed* install with real history.
-- [ ] Test adding a layer to an existing install: regenerate with
-      `--with-classes --with-projects --with-worktree-guard` over the core
-      install and confirm layers appear without disturbing existing tasks.
+- [x] Layers added to the existing install (`--with-classes --with-projects
+      --with-worktree-guard --with-skill`): only machinery + new layer files
+      changed; existing task content untouched. `task-config.sh` gained
+      `PROJECTS_REL`, the template regained its `Category` row.
+      **Finding:** tasks created *before* the classes layer existed degrade
+      gracefully to `[unclassified]` rather than breaking.
+- [x] A **user-authored** class added to `classes.md` survives regeneration, and
+      `--category` immediately accepts the new value — confirming `classes.md` is
+      treated as content, not machinery.
 
 ## Part C — Git layout matrix
 
-- [ ] **Single git workspace:** `tasks-test/` as above.
-- [ ] **Git worktree:** `tasks-test-wt/` set up like ai-builder (`.bare` + linked
-      `main/`). Generate into `main/`; confirm root resolves to the worktree root,
-      not `.bare`. (Cheap here, decisive in task 09.)
+- [x] **Single git workspace:** `tasks-test/` — zero-diff regeneration confirmed.
+- [x] **Git worktree:** `tasks-test-wt/` (`.bare` + linked `main/`, `main/.git`
+      is a FILE). Root resolved to `.../tasks-test-wt/main` (not `.bare`); task
+      creation works; regeneration over the committed worktree install also
+      produced a **zero-line diff**.
 
 ## Done when
 
