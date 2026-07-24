@@ -1,5 +1,10 @@
 # Task 13 — Rename audit inside create-ai-builder (repo-name vs product-name)
 
+> **OWNERSHIP: create-ai-builder-domain work** (editing its own README/bootstrap/
+> docs), not generator-build work — same as [[12-relocate-pipeline-scripts]].
+> Placeholder here; re-home into create-ai-builder's task tracker after task 09
+> Part B, then delete from this repo's plan.
+
 **Context:** after renaming the repo `ai-builder` → `create-ai-builder`, the
 string `ai-builder` still appears **912 times** in the repo. The overwhelming
 majority are the **product/artifact** name and MUST stay. Only true

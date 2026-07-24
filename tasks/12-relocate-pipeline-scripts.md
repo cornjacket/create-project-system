@@ -1,5 +1,12 @@
 # Task 12 — Relocate create-ai-builder's pipeline scripts out of the generated mount
 
+> **OWNERSHIP: this is create-ai-builder-domain work (Pipeline Abstraction
+> Layer), not generator-build work.** It lives here only as a placeholder. Once
+> task 09 Part B regenerates create-ai-builder's task tracker, **re-home this as a
+> real task inside create-ai-builder** (created via its own `new-user-task.sh` —
+> dogfoods the fresh install) and delete it from this repo's plan, leaving a
+> cross-reference in task 09.
+
 **Deferred: do NOT start until task 09 is proven** (task-free create-ai-builder
 regenerated and verified). Sequencing matters — relocating during the strip/regen
 would entangle two independent changes.
