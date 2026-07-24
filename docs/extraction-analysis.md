@@ -1,7 +1,7 @@
-# Extraction Analysis — ai-builder Task Subsystem → `create-task-system`
+# Extraction Analysis — ai-builder Task Subsystem → `create-project-system`
 
 **Goal:** turn ai-builder's in-repo task subsystem into a reusable **generator**.
-`create-task-system` should materialize the entire task subsystem into *any*
+`create-project-system` should materialize the entire task subsystem into *any*
 target repo, at a caller-chosen directory (the "mount path"), with the
 ai-builder-specific bits made optional.
 
@@ -190,7 +190,7 @@ seam (see §3.5) in case that decision changes.
 ## 5. Proposed generator architecture
 
 ```
-create-task-system/
+create-project-system/
     generate.sh              # entry point: read flags, emit into target
     src/                     # source-of-truth copy of the subsystem
         scripts/             #   CORE + OPT scripts, refactored to source task-config.sh
@@ -254,7 +254,7 @@ outputs live in a test repo).
 
 ## 7. Repo layout & directory roles (confirmed 2026-07-22)
 
-`create-task-system` does **not** dogfood the task subsystem. Its own build is
+`create-project-system` does **not** dogfood the task subsystem. Its own build is
 planned with a plain `PLAN.md` + Markdown task files — deliberately lighter than
 the subsystem it emits.
 

@@ -1,6 +1,6 @@
 # PLAN — Build the Task-Subsystem Generator
 
-**Goal:** extract ai-builder's Markdown task subsystem into `create-task-system`
+**Goal:** extract ai-builder's Markdown task subsystem into `create-project-system`
 as a **generator** that materializes the subsystem into any target repo at a
 caller-chosen directory. First generation target is `tasks-test/`; the eventual
 real target is `second-brain/`.
@@ -29,7 +29,7 @@ dependency between them; they only compose at a shared target repo.
 ## Repo layout (target end state)
 
 ```
-create-task-system/
+create-project-system/
     PLAN.md                 ← this file
     generate.sh             ← the emitter (task 04)
     src/                    ← shippable master the generator emits (tasks 01–03b)

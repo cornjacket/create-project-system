@@ -2,7 +2,7 @@
 
 **Goal:** re-home ai-builder's task subsystem onto the generator — build a
 **task-free** variant of ai-builder (the hand-built `project/tasks/` subsystem
-removed) and regenerate it from `create-task-system`. This closes the loop: the
+removed) and regenerate it from `create-project-system`. This closes the loop: the
 generator reproduces the very subsystem it was extracted from.
 
 **Do not start until task 08 (captains-log) succeeds.**

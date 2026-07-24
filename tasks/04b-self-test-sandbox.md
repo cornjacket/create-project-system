@@ -7,11 +7,11 @@
 > failure, so it is CI-ready as-is.
 
 **Goal:** a fast, self-contained smoke test that runs `generate.sh` into a
-**disposable sandbox repo living inside `create-task-system` itself** — no
+**disposable sandbox repo living inside `create-project-system` itself** — no
 external sibling repo needed. This is the quick inner-loop check; the sibling
 `tasks-test/` (task 05) and golden test (task 06) build on it.
 
-**Location:** `create-task-system/sandbox/` — throwaway, regenerated each run,
+**Location:** `create-project-system/sandbox/` — throwaway, regenerated each run,
 git-ignored (never committed).
 
 ## Steps

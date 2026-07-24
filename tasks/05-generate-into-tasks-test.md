@@ -27,7 +27,7 @@ retired cheaply, on a repo nobody depends on.
 
 ## Part A — First install (thin)
 
-- [x] Create `tasks-test/` (`git init`) as a sibling of `create-task-system/`.
+- [x] Create `tasks-test/` (`git init`) as a sibling of `create-project-system/`.
 - [x] `generate.sh --target-repo ../tasks-test --tasks-dir tasks --epic main`
 - [x] Smoke-check only: create a task + subtask, list, complete one.
 - [x] **Commit the generated output** — baseline `0cbf5f4`, 36 files.
