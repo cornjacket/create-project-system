@@ -65,7 +65,7 @@ create-project-system/
 10. [x] [`10-status-layer-project-workspace.md`](tasks/10-status-layer-project-workspace.md) — `--with-status` + `project/` workspace + repo rename. ✅ (61 assertions; core/all-layers/project fixtures)
 11. [x] [`11-sentinel-claude-md-block.md`](tasks/11-sentinel-claude-md-block.md) — sentinel-wrap the CLAUDE.md kernel + in-place update. **Blocks 07's CLAUDE.md step.**
 7. [x] [`07-generate-into-second-brain.md`](tasks/07-generate-into-second-brain.md) — the real target; canonical mount `project/tasks --with-status`. ✅ Installed at repo root (5b6d9d4); no cache pollution.
-8. [ ] [`08-generate-into-captains-log.md`](tasks/08-generate-into-captains-log.md) — roll out to captains-log (after second-brain).
+8. [x] [`08-generate-into-captains-log.md`](tasks/08-generate-into-captains-log.md) — roll out to captains-log (after second-brain).
 9. [ ] [`09-generate-into-ai-builder-task-free.md`](tasks/09-generate-into-ai-builder-task-free.md) — build a task-free ai-builder and regenerate into it (closes the loop; after captains-log).
 
 Mark a task `[x]` here when its task file's checklist is fully done.

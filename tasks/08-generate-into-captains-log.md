@@ -1,10 +1,15 @@
-# Task 08 — Generate into `captains-log` (later)
+# Task 08 — Generate into `captains-log`  ✅ DONE
 
-**Goal:** install the task subsystem into the `captains-log` repo via
-`generate.sh`.
-
-**Do not start until task 07 (second-brain) succeeds** — captains-log is a
-follow-on rollout, not part of validation.
+> **Result (2026-07-24):** full canonical layout installed —
+> `--tasks-dir project/tasks --epic main --with-status --with-skill
+> --inject-claude-md`. User chose the full workspace (tasks + status) despite the
+> existing `log/` narrative overlap. First real use of the task-11 sentinel
+> injection: the `task-system:begin/end` block appended cleanly to CLAUDE.md and
+> coexists with the existing `ai-project-status` managed block (different marker
+> namespaces, no collision). Root resolution + full lifecycle smoke-tested from
+> the captains-log root; no placeholder leaks. No embed hooks in captains-log, so
+> no cache concern. Committed as `3c436c3`. Skill named `task-system`, no
+> collision with captains-log's `.claude/` (which had only hooks, no skills).
 
 **Target:** `../captains-log` (sibling repo under `cornjacket/`).
 
