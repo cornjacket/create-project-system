@@ -1,0 +1,51 @@
+name: self-test
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  self-test:
+    name: self-test (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      # Never cancel the other OS on failure — the whole point of this matrix is
+      # comparing platforms, so a Linux failure must not hide the macOS result.
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Toolchain
+        run: |
+          echo "uname   : $(uname)"
+          bash --version | head -1
+          python3 --version
+          # The scripts branch on uname for BSD vs GNU sed (_sed_i). Record which
+          # implementation this leg actually exercised.
+          if sed --version >/dev/null 2>&1; then
+            echo "sed     : $(sed --version | head -1)  [GNU branch]"
+          else
+            echo "sed     : BSD (no --version)          [Darwin branch]"
+          fi
+
+      - name: Run self-test
+        run: bash self-test.sh
+
+      # On failure, re-run with --keep so the generated repos survive, then
+      # upload them. Without this the EXIT trap deletes the evidence.
+      - name: Preserve sandbox for debugging
+        if: failure()
+        run: bash self-test.sh --keep || true
+
+      - name: Upload sandbox
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: sandbox-${{ matrix.os }}
+          path: sandbox/
+          retention-days: 7
+          if-no-files-found: ignore

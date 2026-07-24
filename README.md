@@ -1,5 +1,7 @@
 # create-task-system
 
+[![self-test](https://github.com/cornjacket/create-task-system/actions/workflows/self-test.yml/badge.svg)](https://github.com/cornjacket/create-task-system/actions/workflows/self-test.yml)
+
 A **generator** that installs a filesystem-native, Markdown-based task subsystem
 into any target repo, at a caller-chosen directory. Extracted from the
 [ai-builder](../ai-builder) project's hand-built task tracker.

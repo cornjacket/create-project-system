@@ -54,6 +54,7 @@ create-task-system/
 3b. [x] [`03b-extract-skill.md`](tasks/03b-extract-skill.md) — task-system AI skill + portable `USING.md` + shrunk CLAUDE.md kernel. ✅ (kernel 11 lines; single-source verified)
 4. [x] [`04-build-generate-sh.md`](tasks/04-build-generate-sh.md) — write `generate.sh` per the §5 contract. ✅ (40-assertion suite green; regeneration is non-destructive)
 4b. [x] [`04b-self-test-sandbox.md`](tasks/04b-self-test-sandbox.md) — self-test generation into a disposable in-repo `sandbox/`. ✅ (54 assertions green, CI-ready)
+4c. [x] [`04c-ci.md`](tasks/04c-ci.md) — run the self-test on every push/PR (Linux + macOS). ✅ (workflow added; first run happens on push)
 5. [ ] [`05-generate-into-tasks-test.md`](tasks/05-generate-into-tasks-test.md) — regeneration/upgrade path over a committed install.
 6. [ ] [`06-golden-test.md`](tasks/06-golden-test.md) — reproducibility test.
 7. [ ] [`07-generate-into-second-brain.md`](tasks/07-generate-into-second-brain.md) — the real target (later).
