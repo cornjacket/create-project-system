@@ -70,5 +70,6 @@ create-project-system/
 
 12. [ ] [`12-relocate-pipeline-scripts.md`](tasks/12-relocate-pipeline-scripts.md) — move create-ai-builder's 7 pipeline scripts out of the generated mount. **After task 09 is proven.** (create-ai-builder-owned; re-home after 09B)
 13. [ ] [`13-rename-audit-create-ai-builder.md`](tasks/13-rename-audit-create-ai-builder.md) — rename only the repo-self-references in create-ai-builder (product/history stays). Checked: 912 hits, ~99% stay. (create-ai-builder-owned; re-home after 09B)
+14. [ ] [`14-target-composition-delegate-to-generate.md`](tasks/14-target-composition-delegate-to-generate.md) — target install delegates task layer to a **pinned** generate.sh; pipeline is create-ai-builder's overlay. Design: [`docs/composition-with-create-ai-builder.md`](docs/composition-with-create-ai-builder.md). (create-ai-builder-owned; re-home after 09B)
 
 Mark a task `[x]` here when its task file's checklist is fully done.
