@@ -16,10 +16,27 @@ generator reproduces the very subsystem it was extracted from.
 - [x] **project-status updated for the rename** — `repos.yml` entry + the daily
       routine's `sources` both `ai-builder` → `create-ai-builder`
       (`enabled: false` preserved). Committed `88db225`.
-- [ ] Remaining: surgical machinery strip → regenerate → verify (Parts A–C).
+- [x] **Part A — strip** (branch `task-system-generator-migration`, commit
+      `712379b`): removed the 25 core/projects machinery files, kept the 7 pipeline
+      files + all content (134 task dirs, classes.md, status, reviews).
+- [x] **Part B — regenerate** (commit `c86c49e`): `generate.sh … --with-classes
+      --with-projects --with-status --with-worktree-guard --with-skill`. Added
+      `task-env.sh`/`task-config.sh` (decoupled) + docs + skill + guard; preserved
+      classes.md/status/README/epic (seed-only).
+- [x] **Part C — parity PROVEN:** regenerated machinery reads the 134 existing
+      tasks (all folders render), category grouping parses the 8-class classes.md,
+      writes work (create/subtask/complete/X-), worktree root resolves to `main/`,
+      175 `X-` subtasks + 6 wont-do survive, guard runs. Branch diff = machinery
+      swap only, `draft/README.md` byte-identical to main (write-test artifact
+      removed).
+- [ ] **Not merged** — branch awaits review. create-ai-builder-domain follow-ups
+      before/after merge: place the `## Task tracking` CLAUDE.md block + reconcile
+      old task-script references (→ task 13); reconcile the 7 pipeline scripts
+      against the new decoupled core (→ task 12); decide target-composition
+      (bundle create-project-system when generating into targets — new c-a-b task).
 
 **Approach: transform `create-ai-builder/main` in place** (it's the working
-worktree). Work on a branch if you want a reviewable diff before merging to main.
+worktree), on branch `task-system-generator-migration` for a reviewable diff.
 
 ## Terminology (read first — these are three different things)
 
