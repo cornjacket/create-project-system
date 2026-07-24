@@ -1,9 +1,17 @@
-# Task 07 — Generate into `second-brain/` (real target, later)
+# Task 07 — Generate into `second-brain/` (real target)  ✅ DONE
+
+> **Result (2026-07-24):** installed at repo root via
+> `--tasks-dir project/tasks --epic main --with-status --with-skill`. Root
+> resolution + full task lifecycle smoke-tested from the second-brain root;
+> sentinel-wrapped `## Task tracking` pointer hand-placed in `CLAUDE.md` (task 11
+> markers). **Zero semantic-cache pollution** — the pre-commit `embed_staged.py`
+> only touches `vault/<para-root>/`, so the root-level `project/` + `.claude/`
+> files are ignored (confirmed: no `.embed.json` sidecars created). Committed to
+> second-brain as `5b6d9d4`. No collision with the brain's own `install_skill.py`
+> (its skill is named `second-brain`; ours is `task-system`).
 
 **Goal:** install the task subsystem into the actual second-brain repo once the
 generator is validated against `tasks-test/`.
-
-**Do not start until tasks 05–06 pass.**
 
 ## Decisions (from the option-B discussion)
 
