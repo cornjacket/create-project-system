@@ -73,5 +73,6 @@ create-project-system/
 14. [ ] [`14-target-composition-delegate-to-generate.md`](tasks/14-target-composition-delegate-to-generate.md) — target install delegates task layer to a **pinned** generate.sh; pipeline is create-ai-builder's overlay. Design: [`docs/composition-with-create-ai-builder.md`](docs/composition-with-create-ai-builder.md). (create-ai-builder-owned; re-home after 09B)
 15. [ ] [`15-require-category-opt-in.md`](tasks/15-require-category-opt-in.md) — `--require-category` opt-in enforcement in the generator (surfaced by task 09 CI; lets create-ai-builder restore category-required without forking the script). **create-project-system-owned.**
 16. [ ] [`16-task-manager-skill-over-claude-md.md`](tasks/16-task-manager-skill-over-claude-md.md) — make the task-system skill (+USING.md) the primary usage vehicle so CLAUDE.md keeps only the kernel. **create-project-system-owned.**
+18. [ ] [`18-complete-task-infer-parent.md`](tasks/18-complete-task-infer-parent.md) — discuss & resolve: infer/record the parent so `complete-task.sh` doesn't require `--parent` for subtasks. **create-project-system-owned.** (17 relocated to create-context-hygiene.)
 
 Mark a task `[x]` here when its task file's checklist is fully done.
