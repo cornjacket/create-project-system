@@ -41,8 +41,10 @@ So the vehicle exists; this task is about making the **skill** carry enough that
   out (rely on the emitted skill), keep only pipeline/worktree-class specifics.
   (create-ai-builder-domain follow-up; pairs with the deferred CLAUDE.md
   reconciliation from task 09 / [[13-rename-audit-create-ai-builder]].)
-- Pairs with [[17-context-hygiene-claude-md]] — the budget/hygiene side of the
-  same "keep CLAUDE.md small" goal.
+- Pairs with **create-context-hygiene task 12** (`12-claude-md-first-and-skill-
+  handoff`) — the budget/hygiene side of the same "keep CLAUDE.md small" goal.
+  That task wires "procedure that leaves CLAUDE.md" to *this* skill as its landing
+  zone. (Relocated there — it's context-hygiene's domain.)
 
 ## Done when
 
