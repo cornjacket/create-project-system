@@ -74,5 +74,6 @@ create-project-system/
 15. [ ] [`15-require-category-opt-in.md`](tasks/15-require-category-opt-in.md) — `--require-category` opt-in enforcement in the generator (surfaced by task 09 CI; lets create-ai-builder restore category-required without forking the script). **create-project-system-owned.**
 16. [ ] [`16-task-manager-skill-over-claude-md.md`](tasks/16-task-manager-skill-over-claude-md.md) — make the task-system skill (+USING.md) the primary usage vehicle so CLAUDE.md keeps only the kernel. **create-project-system-owned.**
 18. [ ] [`18-complete-task-infer-parent.md`](tasks/18-complete-task-infer-parent.md) — discuss & resolve: infer/record the parent so `complete-task.sh` doesn't require `--parent` for subtasks. **create-project-system-owned.** (17 relocated to create-context-hygiene.)
+19. [ ] [`19-rename-category-to-worktree.md`](tasks/19-rename-category-to-worktree.md) — discuss & resolve: rename `Category` to `Worktree`, since the field names a worktree class (which files a task touches) and the current name invites reaching for it to group tasks topically, where `Tags` is the real mechanism. Interacts with task 15. **create-project-system-owned.**
 
 Mark a task `[x]` here when its task file's checklist is fully done.
