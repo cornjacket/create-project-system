@@ -72,5 +72,7 @@ create-project-system/
 13. [ ] [`13-rename-audit-create-ai-builder.md`](tasks/13-rename-audit-create-ai-builder.md) — rename only the repo-self-references in create-ai-builder (product/history stays). Checked: 912 hits, ~99% stay. (create-ai-builder-owned; re-home after 09B)
 14. [ ] [`14-target-composition-delegate-to-generate.md`](tasks/14-target-composition-delegate-to-generate.md) — target install delegates task layer to a **pinned** generate.sh; pipeline is create-ai-builder's overlay. Design: [`docs/composition-with-create-ai-builder.md`](docs/composition-with-create-ai-builder.md). (create-ai-builder-owned; re-home after 09B)
 15. [ ] [`15-require-category-opt-in.md`](tasks/15-require-category-opt-in.md) — `--require-category` opt-in enforcement in the generator (surfaced by task 09 CI; lets create-ai-builder restore category-required without forking the script). **create-project-system-owned.**
+16. [ ] [`16-task-manager-skill-over-claude-md.md`](tasks/16-task-manager-skill-over-claude-md.md) — make the task-system skill (+USING.md) the primary usage vehicle so CLAUDE.md keeps only the kernel. **create-project-system-owned.**
+17. [ ] [`17-context-hygiene-claude-md.md`](tasks/17-context-hygiene-claude-md.md) — token-budget + placement rubric + productized check for CLAUDE.md. Related to 16; **belongs to `create-context-hygiene`** (re-home there).
 
 Mark a task `[x]` here when its task file's checklist is fully done.
