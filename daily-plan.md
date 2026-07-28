@@ -1,4 +1,4 @@
-# Daily plan — 2026-07-24
+# Daily plan — 2026-07-27
 
 **What this repo is (for a newcomer):** A Cookiecutter-style *generator* that
 installs a Markdown-based project-management workspace — a task tracker
