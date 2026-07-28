@@ -1,32 +1,46 @@
-# Daily plan — 2026-07-27
+# Daily plan — 2026-07-28
 
 **What this repo is (for a newcomer):** A Cookiecutter-style *generator* that
 installs a Markdown-based project-management workspace — a task tracker
 (`tasks/`) plus periodic status reports (`status/`) — into any target repo at a
 caller-chosen mount, non-destructively and re-runnably.
 
-**Last implemented:** Option B — added the `--with-status` layer so the
-generator reproduces the whole `project/` workspace (tasks + status), not just
-the tasks pillar; renamed the repo `create-task-system` → `create-project-system`
-to match. Self-test at 61 assertions green; new `project` golden fixture pins the
-container layout.
+**Last implemented:** Task-tracker curation day — bootstrapped project-status
+tracking here (daily-plan, kernel rule block, SessionStart hook) and captured the
+two orphaned decisions nothing was watching: task 21 (retire the `tasks-test`
+scratch repos) and task 22 (the deferred shared-generator-substrate call).
 
 **Focus / plan:**
 
-- **Task 07 — first real rollout: generate into `second-brain/`.** Run at repo
-  root (siblings of `vault/`, never inside it):
-  `--tasks-dir project/tasks --epic main --with-status --with-skill`.
-- Smoke-test the emitted scripts from the second-brain root; **review the diff
-  before committing** anything into that live repo.
-- Confirm no overlap with second-brain's own `install_skill.py` / `.claude/`.
-- Low-priority cleanup: update the 3 second-brain notes that still cite the old
-  `create-task-system` name.
-- If 07 lands cleanly, tee up **task 08** (captains-log).
+- **Close task 09 — the last open rollout.** Parts A–C are proven on
+  create-ai-builder's `task-system-generator-migration` branch (strip `712379b`,
+  regen `c86c49e`, parity verified against 134 real tasks); the branch is
+  *unmerged and awaiting review*. Review the machinery-swap diff and merge —
+  that work lands **in create-ai-builder**, from a session rooted there.
+- Once merged, mark 09 `[x]` in `PLAN.md`. The generator then reproduces the
+  subsystem it was extracted from — the loop is closed.
+- Then start the discuss-then-resolve backlog, which is now the bulk of the
+  queue. Suggested order: **19** (rename `Category` → `Worktree`) before **15**
+  (`--require-category` opt-in), since 15 bakes the field name into a generate
+  flag; then **18** (infer the parent in `complete-task.sh`) and **20**
+  (`project/projects/` layout in the rich view).
+- Cheap wins if there's slack: **21** (delete `tasks-test/` + `tasks-test-wt/`,
+  silencing the un-bootstrapped-repo nudge) and **16** (skill + `USING.md` as the
+  primary usage vehicle, kernel-only CLAUDE.md).
+- **22** stays a discussion, not a build — the valid outcome is a *written
+  trigger* in both copies of the decision, not a shared library today.
 
 ```
 today ─┐
        ▼
-   [07] second-brain  ──►  [08] captains-log  ──►  [09] task-free ai-builder
-   generate @ root         (next)                  (closes the loop)
-   project/{tasks,status}
+  [09] merge task-system-generator-migration   ← in create-ai-builder
+       (strip + regen proven, review pending)
+            │  loop closed
+            ▼
+  discuss-then-resolve queue (this repo)
+       19 ──► 15        18        20
+    (rename)  (flag)  (parent)  (layout)
+            │
+            └─ slack: 21 (scratch-repo cleanup) · 16 (skill over CLAUDE.md)
+                      22 stays a decision, not a build
 ```
