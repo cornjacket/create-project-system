@@ -1,11 +1,17 @@
 # Task 09 — Task-free `create-ai-builder`, then generate into it
 
+**STATUS: DONE — merged 2026-07-26** (create-ai-builder PR #4, squash `7845243`).
+The Progress log below is the authoritative record of what was executed and
+verified. The Part A/B/C sections further down are the *original plan* — kept for
+the reasoning and the file classification, not re-ticked item by item; parity was
+proven in aggregate against 134 real tasks (see Part C entry in Progress).
+
 **Goal:** re-home the task subsystem of the repo formerly known as ai-builder
 onto the generator — strip its hand-built `project/tasks/` machinery (content
 kept) and regenerate it from `create-project-system`. Closes the loop: the
 generator reproduces the very subsystem it was extracted from.
 
-## Progress (2026-07-24)
+## Progress (2026-07-24 → merged 2026-07-26)
 
 - [x] **Renamed `ai-builder` → `create-ai-builder`** (it's a *generator* — installs
       an agent build pipeline into a target repo — so it joins the `create-*`
@@ -29,11 +35,19 @@ generator reproduces the very subsystem it was extracted from.
       175 `X-` subtasks + 6 wont-do survive, guard runs. Branch diff = machinery
       swap only, `draft/README.md` byte-identical to main (write-test artifact
       removed).
-- [ ] **Not merged** — branch awaits review. create-ai-builder-domain follow-ups
-      before/after merge: place the `## Task tracking` CLAUDE.md block + reconcile
-      old task-script references (→ task 13); reconcile the 7 pipeline scripts
-      against the new decoupled core (→ task 12); decide target-composition
-      (bundle create-project-system when generating into targets — new c-a-b task).
+- [x] **MERGED 2026-07-26** — create-ai-builder PR #4, "Re-home the task subsystem
+      onto the create-project-system generator", squash-merged as `7845243`
+      (branch deleted; `712379b`/`c86c49e` live on inside the squash, so they do
+      not appear as ancestors of `main`). **The loop is closed:** the generator
+      now produces create-ai-builder's task machinery, the very subsystem it was
+      extracted from.
+- [x] **create-ai-builder-domain follow-ups re-homed** (`afe148a`, 2026-07-26) into
+      create-ai-builder's own tracker — created with its freshly-migrated
+      `new-user-task.sh`, which dogfoods the merge: `29297c-relocate-pipeline-scripts`
+      (the 7 hand-owned pipeline scripts vs. the new decoupled core, ex-task 12),
+      `59ea60-repo-name-rename-audit` (CLAUDE.md block + stale task-script
+      references, ex-task 13), `15d940-target-setup-uses-generator-for-tasks`
+      (target composition). Nothing from this list remains create-project-system's.
 
 **Approach: transform `create-ai-builder/main` in place** (it's the working
 worktree), on branch `task-system-generator-migration` for a reviewable diff.

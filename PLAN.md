@@ -66,7 +66,7 @@ create-project-system/
 11. [x] [`11-sentinel-claude-md-block.md`](tasks/11-sentinel-claude-md-block.md) — sentinel-wrap the CLAUDE.md kernel + in-place update. **Blocks 07's CLAUDE.md step.**
 7. [x] [`07-generate-into-second-brain.md`](tasks/07-generate-into-second-brain.md) — the real target; canonical mount `project/tasks --with-status`. ✅ Installed at repo root (5b6d9d4); no cache pollution.
 8. [x] [`08-generate-into-captains-log.md`](tasks/08-generate-into-captains-log.md) — roll out to captains-log (after second-brain).
-9. [ ] [`09-generate-into-ai-builder-task-free.md`](tasks/09-generate-into-ai-builder-task-free.md) — task-free `create-ai-builder`, then regenerate. Rename + project-status tracking DONE; surgical strip + regen + verify remain.
+9. [x] [`09-generate-into-ai-builder-task-free.md`](tasks/09-generate-into-ai-builder-task-free.md) — task-free `create-ai-builder`, then regenerate. ✅ **Loop closed** — the generator reproduces the subsystem it was extracted from. Merged as create-ai-builder PR #4 (squash `7845243`, 2026-07-26); parity proven against 134 real tasks.
 
 12–14. **Re-homed to create-ai-builder** (2026-07-26) — created in its own tracker via `new-user-task.sh` (dogfooding the migrated system): `29297c-relocate-pipeline-scripts`, `59ea60-repo-name-rename-audit`, `15d940-target-setup-uses-generator-for-tasks`. The target-composition design doc stays here: [`docs/composition-with-create-ai-builder.md`](docs/composition-with-create-ai-builder.md).
 15. [ ] [`15-require-category-opt-in.md`](tasks/15-require-category-opt-in.md) — `--require-category` opt-in enforcement in the generator (surfaced by task 09 CI; lets create-ai-builder restore category-required without forking the script). **create-project-system-owned.**
