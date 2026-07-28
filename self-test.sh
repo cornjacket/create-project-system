@@ -73,9 +73,9 @@ t $? "generate.sh exits 0"
 [[ -f "$A/tasks/scripts/task-config.sh" ]];        t $? "task-config.sh rendered"
 [[ -f "$A/tasks/docs/USING.md" ]];                 t $? "USING.md always emitted"
 [[ -d "$A/tasks/main/backlog" ]];                  t $? "starter epic scaffolded"
-[[ ! -f "$A/tasks/classes.md" ]];                  t $? "no classes.md without flag"
+[[ ! -f "$A/tasks/worktrees.md" ]];                t $? "no worktrees.md without flag"
 [[ ! -d "$A/.claude/skills" ]];                    t $? "no skill without flag"
-! grep -qE '^\| Category' "$A/tasks/scripts/user-task-template.md"; t $? "Category row stripped (classes off)"
+! grep -qE '^\| Worktree' "$A/tasks/scripts/user-task-template.md"; t $? "Worktree row stripped (worktrees off)"
 lifecycle "$A" tasks main "lifecycle:"
 
 ############################################################
@@ -92,8 +92,8 @@ grep -q '{{NAME}}' "$A/tasks/scripts/user-task-template.md"; t $? "runtime place
 section "3. All layers (nested mount, custom epic)"
 B="$SANDBOX/layers"; newrepo "$B"
 "$GEN" --target-repo "$B" --tasks-dir pm/tasks --epic dev \
-    --with-classes --with-projects --with-status --with-worktree-guard --with-skill >/dev/null 2>&1
-[[ -f "$B/pm/tasks/classes.md" ]];                     t $? "classes layer emitted"
+    --with-worktrees --with-projects --with-status --with-worktree-guard --with-skill >/dev/null 2>&1
+[[ -f "$B/pm/tasks/worktrees.md" ]];                   t $? "worktrees layer emitted"
 [[ -f "$B/pm/tasks/scripts/new-project.sh" ]];         t $? "projects layer emitted"
 [[ -f "$B/pm/tasks/scripts/check-task-complete.py" ]]; t $? "worktree-guard emitted"
 [[ -f "$B/.claude/skills/task-system/SKILL.md" ]];     t $? "skill emitted to .claude/skills/"
@@ -106,7 +106,7 @@ grep -q 'pm/tasks/docs/USING.md' "$B/pm/status/README.md"; t $? "status README p
 grep -q 'Status reports' "$B/pm/tasks/docs/USING.md";  t $? "USING.md carries the status-report workflow"
 STLEAK=$(grep -rl '{{STATUS_REL}}\|{{CONTAINER_REL}}\|{{TASKS_BASE}}' "$B/pm" 2>/dev/null | wc -l | tr -d ' ')
 [[ "$STLEAK" == "0" ]];                                t $? "status placeholders fully rendered"
-grep -qE '^\| Category' "$B/pm/tasks/scripts/user-task-template.md"; t $? "Category row present (classes on)"
+grep -qE '^\| Worktree' "$B/pm/tasks/scripts/user-task-template.md"; t $? "Worktree row present (worktrees on)"
 lifecycle "$B" pm/tasks dev "nested:"
 ( cd "$B" && "$B/pm/tasks/scripts/new-project.sh" --name svc >/dev/null 2>&1 )
 [[ -d "$B/pm/projects/svc" ]];                         t $? "new-project.sh writes to derived mount"
@@ -117,25 +117,25 @@ lifecycle "$B" pm/tasks dev "nested:"
 ############################################################
 section "4. Regeneration safety (upgrade path)"
 C="$SANDBOX/regen"; newrepo "$C"
-"$GEN" --target-repo "$C" --tasks-dir tasks --epic main --with-classes >/dev/null 2>&1
-( cd "$C" && "$C/tasks/scripts/new-user-task.sh" --folder draft --name keep-me --category general >/dev/null 2>&1 )
+"$GEN" --target-repo "$C" --tasks-dir tasks --epic main --with-worktrees >/dev/null 2>&1
+( cd "$C" && "$C/tasks/scripts/new-user-task.sh" --folder draft --name keep-me --worktree general >/dev/null 2>&1 )
 TC="$(ls "$C/tasks/main/draft" | grep -- '-keep-me$' | head -1)"
-echo "MY LOCAL EDIT" >> "$C/tasks/classes.md"
+echo "MY LOCAL EDIT" >> "$C/tasks/worktrees.md"
 BEFORE_TASK="$(cat "$C/tasks/main/draft/$TC/README.md")"
-BEFORE_CLASSES="$(cat "$C/tasks/classes.md")"
+BEFORE_WORKTREES="$(cat "$C/tasks/worktrees.md")"
 BEFORE_STATUS="$(cat "$C/tasks/main/draft/README.md")"
 ( cd "$C" && git add -A >/dev/null 2>&1 && git commit -qm baseline >/dev/null 2>&1 )
 
-"$GEN" --target-repo "$C" --tasks-dir tasks --epic main --with-classes >/dev/null 2>&1
+"$GEN" --target-repo "$C" --tasks-dir tasks --epic main --with-worktrees >/dev/null 2>&1
 [[ "$(cat "$C/tasks/main/draft/$TC/README.md")" == "$BEFORE_TASK" ]];  t $? "task content untouched"
-[[ "$(cat "$C/tasks/classes.md")" == "$BEFORE_CLASSES" ]];             t $? "user-edited classes.md preserved"
+[[ "$(cat "$C/tasks/worktrees.md")" == "$BEFORE_WORKTREES" ]];         t $? "user-edited worktrees.md preserved"
 [[ "$(cat "$C/tasks/main/draft/README.md")" == "$BEFORE_STATUS" ]];    t $? "status task list not clobbered"
 DIRTY="$(git -C "$C" status --porcelain | wc -l | tr -d ' ')"
 [[ "$DIRTY" == "0" ]];                                                 t $? "identical re-run -> zero-line git diff"
 echo "# local hack" >> "$C/tasks/scripts/show-task.sh"
-"$GEN" --target-repo "$C" --tasks-dir tasks --epic main --with-classes >/dev/null 2>&1
+"$GEN" --target-repo "$C" --tasks-dir tasks --epic main --with-worktrees >/dev/null 2>&1
 ! grep -q "local hack" "$C/tasks/scripts/show-task.sh";                t $? "machinery IS upgraded (local edit reverted)"
-"$GEN" --target-repo "$C" --tasks-dir tasks --epic main --with-classes --with-projects >/dev/null 2>&1
+"$GEN" --target-repo "$C" --tasks-dir tasks --epic main --with-worktrees --with-projects >/dev/null 2>&1
 [[ -f "$C/tasks/scripts/new-project.sh" ]];                            t $? "layer added to existing install"
 [[ "$(cat "$C/tasks/main/draft/$TC/README.md")" == "$BEFORE_TASK" ]];  t $? "...task content still untouched"
 
@@ -176,7 +176,88 @@ KL=$(grep -c . "$D/CLAUDE.md")
 [[ $KL -lt 25 ]];                           t $? "always-on cost stays small ($KL non-blank lines)"
 
 ############################################################
-section "7. Golden reproducibility (tests/run.sh)"
+section "7. Category -> Worktree rename: compatibility (task 19)"
+# The metadata row and the definitions file are both CONTENT, which the
+# generator never rewrites. Pre-rename installs are therefore supported by the
+# READERS, permanently — not by a migration. These assertions are what makes
+# that claim true rather than aspirational.
+R="$SANDBOX/rename"; newrepo "$R"
+"$GEN" --target-repo "$R" --tasks-dir tasks --epic main --with-worktrees >/dev/null 2>&1
+
+# --worktree is the current spelling; --category still works, with a warning.
+( cd "$R" && "$R/tasks/scripts/new-user-task.sh" --folder draft --name modern --worktree general >/dev/null 2>&1 )
+t $? "new-user-task.sh --worktree accepted"
+( cd "$R" && "$R/tasks/scripts/new-user-task.sh" --folder draft --name legacy --category general >/dev/null 2>&1 )
+t $? "new-user-task.sh --category still accepted (deprecated)"
+( cd "$R" && "$R/tasks/scripts/new-user-task.sh" --folder draft --name warned --category general 2>&1 >/dev/null ) \
+    | grep -q 'deprecated'
+t $? "  ...and warns on stderr"
+( cd "$R" && "$R/tasks/scripts/new-user-task.sh" --folder draft --name bad --worktree nope >/dev/null 2>&1 )
+[[ $? -ne 0 ]];                                   t $? "unknown --worktree rejected"
+( cd "$R" && "$R/tasks/scripts/new-user-task.sh" --folder draft --name bad2 --worktree nope 2>&1 >/dev/null ) \
+    | grep -q -- '--tags'
+t $? "  ...and points the operator at --tags for topical grouping"
+
+# A task created before the rename carries `| Category |`. Rewrite one to
+# simulate that, then prove both readers still see it.
+LEG="$(ls "$R/tasks/main/draft" | grep -- '-legacy$' | head -1)"
+perl -0pi -e 's{^\| Worktree}{| Category}m' "$R/tasks/main/draft/$LEG/README.md"
+grep -qE '^\| Category' "$R/tasks/main/draft/$LEG/README.md"; t $? "  (setup) legacy Category row in place"
+( cd "$R" && "$R/tasks/scripts/list-tasks.sh" --folder draft --worktree general ) | grep -q -- "$LEG"
+t $? "legacy Category row still matches --worktree filter"
+( cd "$R" && "$R/tasks/scripts/list-tasks.sh" --folder draft --group-by-worktree ) | grep -q '\[general\]'
+t $? "legacy and current rows group together under one worktree"
+( cd "$R" && "$R/tasks/scripts/list-tasks.sh" --folder draft --group-by-category 2>&1 >/dev/null ) | grep -q 'deprecated'
+t $? "--group-by-category warns but works"
+
+# A pre-rename install names the file classes.md. Readers fall back to it, and
+# regeneration must NOT drop a fresh worktrees.md beside it — that would
+# silently shadow the operator's real definitions with an empty starter.
+P="$SANDBOX/prerename"; newrepo "$P"
+"$GEN" --target-repo "$P" --tasks-dir tasks --epic main --with-worktrees >/dev/null 2>&1
+mv "$P/tasks/worktrees.md" "$P/tasks/classes.md"
+perl -0pi -e 's/`general`/`legacy-wt`/' "$P/tasks/classes.md"
+"$GEN" --target-repo "$P" --tasks-dir tasks --epic main --with-worktrees >/dev/null 2>&1
+[[ ! -e "$P/tasks/worktrees.md" ]];               t $? "regen over classes.md does not seed a shadowing worktrees.md"
+[[ -f "$P/tasks/classes.md" ]];                   t $? "pre-rename classes.md preserved"
+( cd "$P" && "$P/tasks/scripts/new-user-task.sh" --folder draft --name fb --worktree legacy-wt >/dev/null 2>&1 )
+t $? "validation falls back to classes.md"
+( cd "$P" && "$P/tasks/scripts/new-user-task.sh" --folder draft --name fb2 --worktree general >/dev/null 2>&1 )
+[[ $? -ne 0 ]];                                   t $? "  ...and honours ITS values, not the starter's"
+
+# Generate-time flag hard-renamed: typed once, during a deliberate upgrade.
+"$GEN" --target-repo "$P" --tasks-dir tasks --epic main --with-classes >/dev/null 2>&1
+[[ $? -ne 0 ]];                                   t $? "--with-classes exits non-zero"
+"$GEN" --target-repo "$P" --with-classes 2>&1 >/dev/null | grep -q 'renamed to --with-worktrees'
+t $? "  ...with a message naming the replacement"
+
+############################################################
+section "8. set-field.sh — Tags/Priority settable after creation (task 19)"
+# The rename alone does not fix the misuse it was named for: operators reached
+# for Category because Tags could only be set at creation. This closes that.
+SF="$(ls "$R/tasks/main/draft" | grep -- '-modern$' | head -1)"
+( cd "$R" && "$R/tasks/scripts/set-field.sh" --folder draft --name "$SF" --field Tags --value "docs, search" >/dev/null 2>&1 )
+t $? "set-field.sh --field Tags exits 0"
+grep -qE '^\| Tags +\| docs, search' "$R/tasks/main/draft/$SF/README.md"; t $? "  ...Tags row rewritten"
+( cd "$R" && "$R/tasks/scripts/list-tasks.sh" --folder draft --tag docs ) | grep -q -- "$SF"
+t $? "  ...and the new tag is findable via --tag"
+( cd "$R" && "$R/tasks/scripts/set-field.sh" --folder draft --name "$SF" --field priority --value HIGH >/dev/null 2>&1 )
+t $? "field name is case-insensitive"
+grep -qE '^\| Priority +\| HIGH' "$R/tasks/main/draft/$SF/README.md"; t $? "  ...Priority row rewritten"
+( cd "$R" && "$R/tasks/scripts/set-field.sh" --folder draft --name "$SF" --field Tags --value "—" >/dev/null 2>&1 )
+grep -qE '^\| Tags +\| —' "$R/tasks/main/draft/$SF/README.md"; t $? "'—' clears a field"
+( cd "$R" && "$R/tasks/scripts/set-field.sh" --folder draft --name "$SF" --field Priority --value URGENT >/dev/null 2>&1 )
+[[ $? -ne 0 ]];                                   t $? "invalid Priority rejected"
+( cd "$R" && "$R/tasks/scripts/set-field.sh" --folder draft --name "$SF" --field Status --value complete >/dev/null 2>&1 )
+[[ $? -ne 0 ]];                                   t $? "Status refused (mirrors the filesystem)"
+# A value containing '|' must not corrupt the table — this is why it is not sed.
+( cd "$R" && "$R/tasks/scripts/set-field.sh" --folder draft --name "$SF" --field Tags --value 'a/b, c' >/dev/null 2>&1 )
+t $? "value with a slash accepted"
+ROWS=$(grep -cE '^\| Tags' "$R/tasks/main/draft/$SF/README.md")
+[[ "$ROWS" == "1" ]];                             t $? "  ...table still has exactly one Tags row"
+
+############################################################
+section "9. Golden reproducibility (tests/run.sh)"
 bash "$REPO/tests/run.sh" >/dev/null 2>&1
 t $? "generated output matches checked-in golden fixtures"
 

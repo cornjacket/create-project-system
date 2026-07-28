@@ -1,5 +1,12 @@
 # Extraction Analysis — ai-builder Task Subsystem → `create-project-system`
 
+> **Historical document — records the analysis as it stood at extraction time.**
+> Names below have since moved on: the `Category` field is now `Worktree`,
+> `classes.md` is `worktrees.md`, and `--with-classes` is `--with-worktrees`
+> (task 19, 2026-07-28). Left unedited as the record of what was decided and
+> why; see [`../tasks/19-rename-category-to-worktree.md`](../tasks/19-rename-category-to-worktree.md)
+> and `src/layers/README.md` for current behavior.
+
 **Goal:** turn ai-builder's in-repo task subsystem into a reusable **generator**.
 `create-project-system` should materialize the entire task subsystem into *any*
 target repo, at a caller-chosen directory (the "mount path"), with the

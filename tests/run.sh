@@ -31,7 +31,7 @@ UPDATE=false
 fixture_flags() {
     case "$1" in
         core)       echo "--tasks-dir tasks --epic main" ;;
-        all-layers) echo "--tasks-dir tasks --epic main --with-classes --with-projects --with-status --with-worktree-guard --with-skill" ;;
+        all-layers) echo "--tasks-dir tasks --epic main --with-worktrees --with-projects --with-status --with-worktree-guard --with-skill" ;;
         project)    echo "--tasks-dir project/tasks --epic main --with-status --with-skill" ;;
         *) echo "UNKNOWN"; return 1 ;;
     esac

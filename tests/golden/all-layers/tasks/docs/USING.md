@@ -111,6 +111,11 @@ Top-level tasks move between status folders. **Subtask status is binary**: `—`
 # Top-level task
 tasks/scripts/new-user-task.sh --folder draft --name my-feature
 
+# ...with topical tags and a priority. Tags are how you group tasks by SUBJECT
+# (docs, video, education); they are free text and you can set them later too.
+tasks/scripts/new-user-task.sh --folder draft --name my-feature \
+    --tags "docs, search" --priority HIGH
+
 # Subtask (parent is the task's full directory name)
 tasks/scripts/new-user-subtask.sh --folder draft \
     --parent a3f2c1-my-feature --name design-review
@@ -127,6 +132,9 @@ tasks/scripts/list-tasks.sh --folder backlog --depth 2
 
 # Order by priority: HIGH → MED → LOW → unset
 tasks/scripts/list-tasks.sh --folder backlog --sort-priority
+
+# Filter by topic — matches against the Tags field
+tasks/scripts/list-tasks.sh --folder backlog --tag docs
 
 # Everything including completed
 tasks/scripts/list-tasks.sh --all
@@ -157,6 +165,30 @@ tasks/scripts/complete-task.sh --folder in-progress --name a3f2c1-my-feature
 # Undo either
 tasks/scripts/complete-task.sh --folder in-progress --name a3f2c1-my-feature --undo
 ```
+
+### Editing metadata
+
+`Tags` and `Priority` can be changed after creation — you do not have to
+delete and recreate a task (which would destroy its subtasks), and you must not
+hand-edit the metadata table.
+
+```bash
+# Retag an existing task (Tags is free text; this is the TOPICAL grouping)
+tasks/scripts/set-field.sh --folder backlog --name a3f2c1-my-feature \
+    --field Tags --value "docs, search"
+
+# Re-prioritise
+tasks/scripts/set-field.sh --folder backlog --name a3f2c1-my-feature \
+    --field Priority --value HIGH
+
+# Clear a field
+tasks/scripts/set-field.sh --folder backlog --name a3f2c1-my-feature \
+    --field Tags --value "—"
+```
+
+Only `Tags` and `Priority` are settable this way — they mirror nothing on the
+filesystem. `Status` and a task's location are owned by `move-task.sh` and
+`complete-task.sh`.
 
 ### Restructuring
 
@@ -218,19 +250,30 @@ tasks/scripts/complete-task.sh --folder in-progress --name 7f21ab-add-search
 
 These commands exist only if the corresponding layer was installed.
 
-### Categories (`classes.md`)
+### Worktrees (`worktrees.md`)
 
 Groups tasks that touch the same files, so different groups can be worked in
-parallel without conflicting. Valid values are the **Worktree branch** names
-declared in `tasks/classes.md`; `unclassified` is always accepted.
+parallel branches without conflicting. Valid values are the **Worktree branch**
+names declared in `tasks/worktrees.md`; `unclassified` is always
+accepted.
+
+> **This is about isolation, not topic.** `Worktree` answers "which files does
+> this touch, and what can run beside it" — not "what is this about". For
+> subject-matter grouping (`docs`, `video`, `education`) use **`Tags`**, which
+> is free text and settable at any time with `set-field.sh`.
 
 ```bash
-tasks/scripts/new-user-task.sh --folder draft --name my-feature --category docs
-tasks/scripts/list-tasks.sh --folder backlog --category docs
-tasks/scripts/list-tasks.sh --folder backlog --group-by-category --sort-priority
+tasks/scripts/new-user-task.sh --folder draft --name my-feature --worktree docs
+tasks/scripts/list-tasks.sh --folder backlog --worktree docs
+tasks/scripts/list-tasks.sh --folder backlog --group-by-worktree --sort-priority
 ```
 
-If this layer is installed, set a task's category at creation; don't leave it `—`.
+If this layer is installed, set a task's worktree at creation; don't leave it `—`.
+
+> Installs generated before this field was renamed carry it as `Category`, in a
+> `classes.md`. Both spellings are read for as long as they exist — those are
+> content files the generator never rewrites — so no migration is needed. The
+> `--category` and `--group-by-category` flags still work, with a warning.
 
 ### Long-running projects
 

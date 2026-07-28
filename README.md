@@ -16,7 +16,7 @@ types (USER-TASK, USER-SUBTASK, PIPELINE-SUBTASK).
 Into `<target-repo>/<tasks-dir>/`: the management scripts, task templates, status
 scaffolding, a starter epic, an on-demand **task-system skill** + portable
 `USING.md`, and a small always-on CLAUDE.md kernel. Optional layers behind flags:
-`--with-classes` (worktree categories), `--with-projects` (long-running
+`--with-worktrees` (parallel-work isolation), `--with-projects` (long-running
 services), `--with-worktree-guard`, `--with-skill`. The pipeline/orchestrator
 layer is deferred.
 
