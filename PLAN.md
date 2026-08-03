@@ -79,4 +79,6 @@ create-project-system/
 
 23. [x] [`23-cut-v0.1.0-release-tag.md`](tasks/23-cut-v0.1.0-release-tag.md) — cut `v0.1.0`, the first release tag, so create-ai-builder's `15d940` can vendor a *named* ref instead of a bare SHA. ✅ Annotated tag → `c003956`, pushed 2026-07-28; names `generate.sh` + its 10 flags as the layer-1 contract. **Tasks 19 and 15 both break that contract — they belong to the next tag, with a migration position for already-generated repos.**
 
+24. [ ] [`24-fix-pipeline-doc-leakage.md`](tasks/24-fix-pipeline-doc-leakage.md) — fix two layer-1/layer-2 doc defects surfaced from create-ai-builder's `15d940`: (1) `docs/composition-with-create-ai-builder.md` overstates the pipeline overlay as "7 scripts + orchestrator/roles/machines" (the installed overlay is the 7 scripts); (2) the generated `src/docs/README.md` documents `new-pipeline-subtask.sh` / `set-current-job.sh`, which `generate.sh` doesn't install — harmless for ai-builder (it overlays them) but a plain consumer gets docs for missing scripts. **create-project-system-owned.**
+
 Mark a task `[x]` here when its task file's checklist is fully done.
