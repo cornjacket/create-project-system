@@ -31,6 +31,17 @@ fi
 : "${TASKS_REL:?task-config.sh must define TASKS_REL}"
 : "${DEFAULT_EPIC:=main}"
 
+# --- Status folder vocabulary ------------------------------------------------
+# THE definition of the status folders an epic contains, in display order.
+# new-epic.sh creates them, `new-epic.sh --repair` backfills whichever are
+# missing, list-tasks.sh sweeps them. Keep it here and only here: a second copy
+# is how an install ends up short a folder that the rest of the system assumes.
+#
+# Adding a folder to this list reaches EVERY already-generated install, because
+# generate.sh repairs the existing epic through new-epic.sh --repair rather than
+# skipping it whole.
+TASK_STATUSES=(inbox draft backlog in-progress complete wont-do)
+
 # --- Projects layer (optional, --with-projects) ------------------------------
 # Long-running services live in a sibling of the tasks mount. If task-config.sh
 # does not set PROJECTS_REL, derive it as a sibling "projects" dir, which yields

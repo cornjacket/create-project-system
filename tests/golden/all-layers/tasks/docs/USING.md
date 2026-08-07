@@ -122,6 +122,12 @@ tasks/scripts/new-user-subtask.sh --folder draft \
 
 # A new epic (creates all six status folders)
 tasks/scripts/new-epic.sh --name main
+
+# Backfill status folders missing from an EXISTING epic. Safe to run any time:
+# it creates only what is absent and never touches an existing task list.
+# Regeneration does this for the starter epic automatically; run it by hand for
+# the others (or after upgrading a task-system whose folder list grew).
+tasks/scripts/new-epic.sh --repair --name main
 ```
 
 ### Viewing

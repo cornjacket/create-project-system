@@ -25,6 +25,10 @@
 #     overwritten. It is generated output; that is the point.
 #   * CONTENT (epic + status folders, their task lists, worktrees.md) is created
 #     ONLY IF MISSING and is never overwritten. Your tasks are never touched.
+#   * An EXISTING epic is preserved, but a status folder MISSING from it is
+#     backfilled (empty folder + seeded task list). An absent folder is not
+#     content, so creating it destroys nothing — and without this an install
+#     predating a folder's addition could never gain it.
 #   So re-running the same command upgrades the machinery and leaves task content
 #   alone. --force additionally re-seeds content files (rarely wanted).
 #
@@ -53,7 +57,7 @@ WITH_SKILL=false
 INJECT_CLAUDE_MD=false
 FORCE=false
 
-usage() { sed -n '2,36p' "${BASH_SOURCE[0]}" | sed 's/^# \{0,1\}//'; }
+usage() { sed -n '2,40p' "${BASH_SOURCE[0]}" | sed 's/^# \{0,1\}//'; }
 
 while [[ $# -gt 0 ]]; do
     case "$1" in
@@ -124,7 +128,7 @@ DOCS_OUT="$MOUNT/docs"
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
-created=(); updated=(); skipped=()
+created=(); updated=(); skipped=(); backfilled=()
 
 # render <src> <dst> — copy with GENERATOR-TIME placeholders substituted.
 #
@@ -273,6 +277,21 @@ fi
 # ---------------------------------------------------------------------------
 if [[ -d "$MOUNT/$EPIC" ]]; then
     skipped+=("$TASKS_DIR/$EPIC/  (epic exists — task content preserved)")
+    # Preserving the epic must not mean preserving the ABSENCE of a status
+    # folder. A missing folder is not content — it holds no task, so creating it
+    # destroys nothing — but the skip branch used to hide every folder inside the
+    # epic from the generator forever, so an install generated before a folder
+    # joined the vocabulary could never gain it. --repair is create-if-missing:
+    # existing folders and their task lists come back byte-identical, which is
+    # what keeps the zero-diff regeneration guarantee intact.
+    #
+    # The loop itself lives in new-epic.sh so the vocabulary stays in one place
+    # (TASK_STATUSES in task-env.sh); --porcelain gives one backfilled folder
+    # name per line. new-epic.sh was just refreshed above, so even an old install
+    # is repaired by the current vocabulary.
+    while IFS= read -r _status; do
+        [[ -n "$_status" ]] && backfilled+=("$TASKS_DIR/$EPIC/$_status/")
+    done < <( cd "$TARGET" && "$SCRIPTS_OUT/new-epic.sh" --repair --name "$EPIC" --porcelain )
 else
     ( cd "$TARGET" && "$SCRIPTS_OUT/new-epic.sh" --name "$EPIC" >/dev/null )
     created+=("$TASKS_DIR/$EPIC/{inbox,draft,backlog,in-progress,complete,wont-do}/")
@@ -328,6 +347,13 @@ fi
 # ---------------------------------------------------------------------------
 echo "Created:"; for i in "${created[@]:-}";  do [[ -n "$i" ]] && echo "  + $i"; done
 echo "Written:"; for i in "${updated[@]:-}";  do [[ -n "$i" ]] && echo "  ~ $i"; done
+# Backfilled is its own heading, not folded into Created: a repo silently gaining
+# a directory is exactly how this drift went unnoticed for two installs.
+if [[ ${#backfilled[@]} -gt 0 ]]; then
+    echo "Backfilled:"; for i in "${backfilled[@]:-}"; do [[ -n "$i" ]] && echo "  ^ $i"; done
+    echo "  (status folders missing from an existing epic. The epic README's"
+    echo "   status table is content and was not rewritten — add rows by hand.)"
+fi
 if [[ ${#skipped[@]} -gt 0 ]]; then
     echo "Preserved:"; for i in "${skipped[@]:-}"; do [[ -n "$i" ]] && echo "  = $i"; done
 fi

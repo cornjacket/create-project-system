@@ -110,8 +110,8 @@ else
     fi
 fi
 
-# Status display order
-STATUSES=("inbox" "draft" "backlog" "in-progress" "complete" "wont-do")
+# Status display order — the shared vocabulary from task-env.sh, not a copy.
+STATUSES=("${TASK_STATUSES[@]}")
 
 # ---------------------------------------------------------------------------
 # Helper: read Priority field from a task README

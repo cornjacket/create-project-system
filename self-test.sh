@@ -257,7 +257,65 @@ ROWS=$(grep -cE '^\| Tags' "$R/tasks/main/draft/$SF/README.md")
 [[ "$ROWS" == "1" ]];                             t $? "  ...table still has exactly one Tags row"
 
 ############################################################
-section "9. Golden reproducibility (tests/run.sh)"
+section "9. Status-folder backfill over an existing epic (task 25)"
+# Regeneration preserves an existing epic, but preserving it must not preserve
+# the ABSENCE of a status folder — that is how an install generated before
+# `inbox` joined the vocabulary stayed permanently short a folder.
+BF="$SANDBOX/backfill"; newrepo "$BF"
+"$GEN" --target-repo "$BF" --tasks-dir tasks --epic main >/dev/null 2>&1
+( cd "$BF" && "$BF/tasks/scripts/new-user-task.sh" --folder draft --name survivor >/dev/null 2>&1 )
+BFT="$(ls "$BF/tasks/main/draft" | grep -- '-survivor$' | head -1)"
+BEFORE_DRAFT="$(cat "$BF/tasks/main/draft/README.md")"
+BEFORE_EPIC_README="$(cat "$BF/tasks/main/README.md")"
+( cd "$BF" && git add -A >/dev/null 2>&1 && git commit -qm baseline >/dev/null 2>&1 )
+
+# Nothing missing -> repair is a no-op, and regeneration is still zero-diff.
+PORC="$( cd "$BF" && "$BF/tasks/scripts/new-epic.sh" --repair --name main --porcelain )"
+[[ -z "$PORC" ]];                                  t $? "--repair --porcelain silent when nothing is missing"
+( cd "$BF" && "$BF/tasks/scripts/new-epic.sh" --repair --name main >/dev/null 2>&1 )
+t $? "  ...and exits 0 (not the 'epic already exists' error)"
+"$GEN" --target-repo "$BF" --tasks-dir tasks --epic main >/dev/null 2>&1
+DIRTY="$(git -C "$BF" status --porcelain | wc -l | tr -d ' ')"
+[[ "$DIRTY" == "0" ]];                             t $? "regen with nothing missing -> zero-line git diff (task 05 holds)"
+
+# Simulate the drift: an epic that predates a folder joining the vocabulary.
+rm -rf "$BF/tasks/main/inbox"
+GOUT="$("$GEN" --target-repo "$BF" --tasks-dir tasks --epic main 2>&1)"
+[[ -d "$BF/tasks/main/inbox" ]];                   t $? "regen backfills the missing status folder"
+[[ -f "$BF/tasks/main/inbox/README.md" ]];         t $? "  ...with a seeded README"
+grep -qF '<!-- task-list-start -->' "$BF/tasks/main/inbox/README.md"; t $? "  ...that is the empty-list template"
+grep -q '^# main / inbox' "$BF/tasks/main/inbox/README.md";           t $? "  ...headed for the right epic/folder"
+echo "$GOUT" | grep -q 'Backfilled:';              t $? "  ...and is reported distinctly in the summary"
+echo "$GOUT" | grep -qF 'tasks/main/inbox/';       t $? "  ...naming the folder it created"
+# Everything else must be byte-identical: this is the whole safety claim.
+[[ "$(cat "$BF/tasks/main/draft/README.md")" == "$BEFORE_DRAFT" ]];   t $? "sibling folder's task list unchanged"
+[[ -d "$BF/tasks/main/draft/$BFT" ]];                                 t $? "existing task still in place"
+[[ "$(cat "$BF/tasks/main/README.md")" == "$BEFORE_EPIC_README" ]];   t $? "epic README left alone (it is content)"
+DIRTY="$(git -C "$BF" status --porcelain | grep -v 'tasks/main/inbox/' | wc -l | tr -d ' ')"
+[[ "$DIRTY" == "0" ]];                             t $? "git diff limited to the backfilled folder"
+# A second pass has nothing left to do.
+GOUT="$("$GEN" --target-repo "$BF" --tasks-dir tasks --epic main 2>&1)"
+! echo "$GOUT" | grep -q 'Backfilled:';            t $? "second regen reports no backfill (idempotent)"
+
+# A status folder present but README-less is repaired too (half-created state).
+rm -f "$BF/tasks/main/wont-do/README.md"
+( cd "$BF" && "$BF/tasks/scripts/new-epic.sh" --repair --name main --porcelain ) | grep -qx 'wont-do'
+t $? "--repair reseeds a status folder missing only its README"
+
+# --repair refuses to invent an epic; --porcelain requires --repair.
+( cd "$BF" && "$BF/tasks/scripts/new-epic.sh" --repair --name ghost >/dev/null 2>&1 )
+[[ $? -ne 0 ]];                                    t $? "--repair on a nonexistent epic exits non-zero"
+( cd "$BF" && "$BF/tasks/scripts/new-epic.sh" --name main --porcelain >/dev/null 2>&1 )
+[[ $? -ne 0 ]];                                    t $? "--porcelain without --repair rejected"
+
+# The vocabulary is single-source: adding a folder in task-env.sh must reach
+# both the creator and the reader without editing either.
+grep -q 'TASK_STATUSES=' "$BF/tasks/scripts/task-env.sh";  t $? "TASK_STATUSES defined in task-env.sh"
+! grep -qE '^STATUS(ES|_DIRS)=\("?inbox' "$BF/tasks/scripts/new-epic.sh" "$BF/tasks/scripts/list-tasks.sh"
+t $? "  ...and not re-listed literally in new-epic.sh / list-tasks.sh"
+
+############################################################
+section "10. Golden reproducibility (tests/run.sh)"
 bash "$REPO/tests/run.sh" >/dev/null 2>&1
 t $? "generated output matches checked-in golden fixtures"
 

@@ -122,6 +122,12 @@ Top-level tasks move between status folders. **Subtask status is binary**: `—`
 
 # A new epic (creates all six status folders)
 {{TASKS_REL}}/scripts/new-epic.sh --name main
+
+# Backfill status folders missing from an EXISTING epic. Safe to run any time:
+# it creates only what is absent and never touches an existing task list.
+# Regeneration does this for the starter epic automatically; run it by hand for
+# the others (or after upgrading a task-system whose folder list grew).
+{{TASKS_REL}}/scripts/new-epic.sh --repair --name main
 ```
 
 ### Viewing

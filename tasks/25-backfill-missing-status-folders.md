@@ -52,7 +52,28 @@ Regenerating will never fix it. That divergence is what crashed the workspace's
 blocks holding real task ordering. Backfill needs a create-if-missing path, not
 this one.
 
-## Decisions to make
+## Decisions — resolved 2026-08-07
+
+All three landed on the lean. Implementation notes:
+
+- **`--repair` on `new-epic.sh`**, called by `generate.sh`'s skip branch. It also
+  went one better than "don't add a *third* copy of the vocabulary": the two
+  existing copies (`new-epic.sh`'s `STATUS_DIRS`, `list-tasks.sh`'s `STATUSES`)
+  collapsed into `TASK_STATUSES` in `task-env.sh`, which every generated script
+  already sources. The epic README's table is now generated from that list too,
+  so a folder added there reaches creation, repair, listing, and the table at
+  once — and reaches every already-generated install on the next regeneration.
+- **Epic README left alone.** It is content; repair reports the omission instead
+  of editing it (`new-epic.sh` prints a note, `generate.sh` prints it once under
+  its `Backfilled:` heading).
+- **Reporting**: a distinct `Backfilled:` section with a `^` marker, separate
+  from `Created:`/`Written:`/`Preserved:`.
+- **Machine interface**: `--repair --porcelain` emits one backfilled status name
+  per line and nothing else — that is how `generate.sh` learns what to report
+  without owning the vocabulary itself. Repair is create-if-missing only, so it
+  also reseeds a status folder that exists but lost its `README.md`.
+
+## Decisions (original framing)
 
 - **Where the loop lives.** Either a create-if-missing sweep inside
   `generate.sh`'s skip branch, or an idempotent mode on `new-epic.sh`
@@ -72,17 +93,19 @@ this one.
 
 ## What to do
 
-- [ ] Resolve the three decisions above.
-- [ ] Add the create-if-missing backfill so regenerating over an existing epic
+- [x] Resolve the three decisions above.
+- [x] Add the create-if-missing backfill so regenerating over an existing epic
       creates any absent status folder (plus its seeded `README.md`), and leaves
       every existing folder and task list byte-identical.
-- [ ] Report backfilled folders distinctly in `generate.sh`'s summary.
-- [ ] Self-test coverage: generate, delete one status folder, regenerate —
+- [x] Report backfilled folders distinctly in `generate.sh`'s summary.
+- [x] Self-test coverage: generate, delete one status folder, regenerate —
       assert the folder is back, its README is the empty-list template, and the
       other five folders' task lists are unchanged. Also assert the zero-diff
       regeneration property from task 05 still holds when nothing is missing.
-- [ ] Run the backfill against `create-ai-builder` to restore its `inbox/`
-      (that repo owns the commit; this task owns the fix).
+      (`self-test.sh` section 9 — 19 assertions; suite is 110 green.)
+- [x] Run the backfill against `create-ai-builder` to restore its `inbox/`
+      (that repo owns the commit; this task owns the fix). Backfilled
+      2026-08-07 into `create-ai-builder/main`; left uncommitted there.
 
 ## Done when
 
