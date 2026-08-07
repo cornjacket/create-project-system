@@ -41,7 +41,28 @@
 
 set -euo pipefail
 
-SRC_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/src" && pwd)"
+GEN_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+SRC_DIR="$GEN_DIR/src"
+
+# Version stamped into every generated install (see task-config.sh.in).
+#
+# A checked-in file, not `git describe`: describe breaks when this generator is
+# vendored as a tarball or run from a shallow/detached checkout, yields a
+# different string on tagged vs. untagged commits, and would make generated
+# output depend on repo state — which task 06's byte-identical reproducibility
+# forbids. A file is boring and deterministic. The cost is remembering to bump
+# it when tagging; that lives in docs/RELEASING.md.
+if [[ ! -f "$GEN_DIR/VERSION" ]]; then
+    echo "Error: VERSION not found beside generate.sh ($GEN_DIR)." >&2
+    echo "       Every install is stamped with it; emitting an unstamped or" >&2
+    echo "       guessed version would defeat the point. Restore the file." >&2
+    exit 1
+fi
+GENERATOR_VERSION="$(tr -d ' \t\r\n' < "$GEN_DIR/VERSION")"
+if [[ -z "$GENERATOR_VERSION" ]]; then
+    echo "Error: VERSION is empty ($GEN_DIR/VERSION)." >&2
+    exit 1
+fi
 
 # ---------------------------------------------------------------------------
 # Arguments
@@ -125,6 +146,17 @@ MOUNT="$TARGET/$TASKS_DIR"
 SCRIPTS_OUT="$MOUNT/scripts"
 DOCS_OUT="$MOUNT/docs"
 
+# Read the OUTGOING install's stamp before the machinery overwrites it. This is
+# the line that would have made the missing-inbox drift self-announcing: a
+# regeneration that says "0.2.0 -> 0.3.0" tells the operator the contract moved,
+# where silence told them nothing. An existing install with no stamp predates
+# version stamping; that is a fact about its age, not a fault.
+HAD_INSTALL=false; PREV_VERSION=""
+if [[ -f "$SCRIPTS_OUT/task-config.sh" ]]; then
+    HAD_INSTALL=true
+    PREV_VERSION="$(sed -n 's/^GENERATOR_VERSION="\(.*\)"$/\1/p' "$SCRIPTS_OUT/task-config.sh" | head -1)"
+fi
+
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
@@ -142,6 +174,12 @@ created=(); updated=(); skipped=(); backfilled=()
 #                       the task-creation scripts substitute them per task.
 # Never add a runtime token to the substitution list below — it would bake a
 # fixed value into the template and silently break task creation.
+#
+# {{GENERATOR_VERSION}} is deliberately NOT handled here. It is substituted only
+# into task-config.sh, by the explicit sed below, which keeps the stamp to one
+# file — and therefore keeps the golden harness's version-normalisation to one
+# file too. A version embedded in docs would make every release bump a noisy
+# fixture diff.
 render() {
     sed -e "s|{{TASKS_REL}}|$TASKS_DIR|g" \
         -e "s|{{DEFAULT_EPIC}}|$EPIC|g" \
@@ -167,6 +205,14 @@ echo "Generating task subsystem"
 echo "  target : $TARGET"
 echo "  mount  : $TASKS_DIR/"
 echo "  epic   : $EPIC"
+echo "  version: $GENERATOR_VERSION"
+if [[ "$HAD_INSTALL" == true ]]; then
+    if [[ -z "$PREV_VERSION" ]]; then
+        echo "           installed: unstamped (generated before version stamping)"
+    elif [[ "$PREV_VERSION" != "$GENERATOR_VERSION" ]]; then
+        echo "           upgrading: $PREV_VERSION -> $GENERATOR_VERSION"
+    fi
+fi
 echo ""
 
 # ---------------------------------------------------------------------------
@@ -201,6 +247,7 @@ if [[ "$WITH_PROJECTS" == true ]]; then
 fi
 sed -e "s|{{TASKS_REL}}|$TASKS_DIR|g" \
     -e "s|{{DEFAULT_EPIC}}|$EPIC|g" \
+    -e "s|{{GENERATOR_VERSION}}|$GENERATOR_VERSION|g" \
     -e "s|{{PROJECTS_REL_LINE}}|$PROJECTS_REL_LINE|g" \
     "$SRC_DIR/config/task-config.sh.in" > "$SCRIPTS_OUT/task-config.sh"
 

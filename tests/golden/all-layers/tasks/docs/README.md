@@ -332,3 +332,28 @@ tasks/scripts/insert-subtask.sh --epic main --folder in-progress \
 | Epic | Description |
 |---|---|
 | `main` | Default epic. Core ai-builder platform work. |
+
+---
+
+## Which version generated this install
+
+`scripts/task-config.sh` carries a `GENERATOR_VERSION` line naming the
+`create-project-system` release that produced this subsystem:
+
+```bash
+# From anywhere in the repo
+sed -n 's/^GENERATOR_VERSION="\(.*\)"$/\1/p' tasks/scripts/task-config.sh
+
+# Or, from a script that already sources task-env.sh, just read $GENERATOR_VERSION
+```
+
+Read it before assuming anything about this install's shape. Installs in the
+wild legitimately differ — the status-folder vocabulary and the task metadata
+fields have both changed across releases — and without the stamp an **old**
+install and a **broken** one are indistinguishable from outside.
+
+An install with **no** `GENERATOR_VERSION` line predates version stamping. That
+needs no migration: `task-config.sh` is machinery, so the next regeneration
+writes the stamp. Regeneration also prints the transition it is making
+(`upgrading: 0.2.0 -> 0.3.0`), which is how a contract change announces itself
+instead of being discovered by a crash.

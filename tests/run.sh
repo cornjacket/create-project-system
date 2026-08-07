@@ -45,6 +45,15 @@ generate_into() {
     # shellcheck disable=SC2046
     "$GEN" --target-repo "$dst" $(fixture_flags "$name") >/dev/null 2>&1
     rm -rf "$dst/.git"
+    # Mask the generator version stamp. Every release bump would otherwise
+    # rewrite all three fixtures, and a diff that is expected to be noisy is a
+    # diff nobody reads — which is how a real regression slips through.
+    #
+    # Only the VALUE is masked; the LINE must still be emitted, so a stamp that
+    # disappears or gets misspelled still fails the diff. The real value is
+    # asserted in self-test.sh, which is where it belongs.
+    find "$dst" -name task-config.sh -type f -exec \
+        perl -0pi -e 's/^GENERATOR_VERSION=".*"$/GENERATOR_VERSION="<normalised-by-golden-harness>"/m' {} +
 }
 
 if [[ "$UPDATE" == true ]]; then

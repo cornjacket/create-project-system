@@ -41,7 +41,39 @@ gets the value for free, and any consumer can read it with one `grep`:
 GENERATOR_VERSION="{{GENERATOR_VERSION}}"
 ```
 
-## Decisions to make
+## Decisions — resolved 2026-08-07
+
+Four of the five landed on the lean; the fifth (refuse on a major gap) was the
+one left open, and it resolved to **no**.
+
+- **Version source: a checked-in `VERSION` file** at the repo root, read by
+  `generate.sh`. Between releases it carries a `-dev` suffix (`0.3.0-dev`), so
+  an install generated from an untagged tree says so rather than impersonating
+  the last release. A missing or empty `VERSION` is a **hard error** — emitting
+  a guessed stamp would defeat the whole point.
+- **Determinism: version string only.** No date, SHA or hostname. Asserted
+  directly: two independent generations still diff clean.
+- **Golden fixtures: normalised.** `tests/run.sh` masks the *value* of the
+  `GENERATOR_VERSION` line before diffing, so a release bump produces no fixture
+  churn — verified by bumping `VERSION` to `9.9.9` and confirming the golden test
+  still passes. The **line** is not masked, so a stamp that stops being emitted
+  still fails. The real value is asserted in `self-test.sh`, where it belongs.
+- **Drift reporting: report, do not refuse.** The header prints
+  `upgrading: <old> -> <new>`, or `installed: unstamped` for a pre-versioning
+  install. It does **not** hard-stop on a major gap. Blocking regeneration on a
+  version gap would block the very run that *repairs* drift — task 25's status
+  folder backfill only reaches an old install by regenerating it. The existing
+  `--with-classes` error stays the right shape for hard stops: precise, and
+  naming the replacement, rather than a blanket version gate.
+- **Existing installs: no migration.** Confirmed by test — an install with the
+  stamp stripped is reported as unstamped and gains one on the next run, because
+  `task-config.sh` is machinery.
+
+Scope note: the stamp is confined to `task-config.sh` (asserted). Putting it in
+docs or templates would make every release bump a noisy golden diff, which is
+the same failure the normalisation decision exists to avoid.
+
+## Decisions (original framing)
 
 - **Where the version comes from.** This repo has no `VERSION` file; the version
   exists only as a git tag. Options: (a) checked-in `VERSION` file at the repo
@@ -75,18 +107,22 @@ GENERATOR_VERSION="{{GENERATOR_VERSION}}"
 
 ## What to do
 
-- [ ] Resolve the decisions above.
-- [ ] Add the version source of truth and render `{{GENERATOR_VERSION}}` into
-      `task-config.sh` via `src/config/task-config.sh.in`.
-- [ ] Report the version in `generate.sh`'s header output (beside `epic` /
+- [x] Resolve the decisions above.
+- [x] Add the version source of truth and render `{{GENERATOR_VERSION}}` into
+      `task-config.sh` via `src/config/task-config.sh.in`. (`VERSION` =
+      `0.3.0-dev`; `v0.2.0` is tagged, and tasks 25 + 26 are both additive.)
+- [x] Report the version in `generate.sh`'s header output (beside `epic` /
       `mount`), and report an old→new transition when regenerating.
-- [ ] Refresh the three golden fixtures, and normalise the version line in
-      `tests/run.sh` if that decision lands that way.
-- [ ] Self-test coverage: the stamp is present and correct in a fresh install;
+- [x] Refresh the three golden fixtures, and normalise the version line in
+      `tests/run.sh` if that decision lands that way. (It did.)
+- [x] Self-test coverage: the stamp is present and correct in a fresh install;
       two independent generations remain byte-identical; regenerating over an
       older stamp reports the transition and rewrites the value.
-- [ ] Document the stamp in `src/docs/README.md` so a consumer knows where to
+      (`self-test.sh` section 10 — 16 assertions; suite is 126 green.)
+- [x] Document the stamp in `src/docs/README.md` so a consumer knows where to
       look, and add "bump the version file" to the release procedure.
+      (The release procedure existed only as task 23's narrative, so it is now a
+      doc: [`docs/RELEASING.md`](../docs/RELEASING.md).)
 
 ## Done when
 

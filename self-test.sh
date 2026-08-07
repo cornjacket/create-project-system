@@ -84,7 +84,7 @@ LEAK=$(grep -rl 'project/tasks' "$A/tasks/scripts" 2>/dev/null | wc -l | tr -d '
 [[ "$LEAK" == "0" ]];                              t $? "zero 'project/tasks' literals in emitted scripts"
 LEAK=$(grep -rl '\.\./\.\./\.\.' "$A/tasks/scripts" 2>/dev/null | wc -l | tr -d ' ')
 [[ "$LEAK" == "0" ]];                              t $? "zero '../../..' root walks in emitted scripts"
-GENPH=$(grep -rl '{{TASKS_REL}}\|{{DEFAULT_EPIC}}\|{{PROJECTS_REL}}\|{{PROJECTS_REL_LINE}}\|{{STATUS_REL}}\|{{CONTAINER_REL}}\|{{TASKS_BASE}}' "$A/tasks" 2>/dev/null | wc -l | tr -d ' ')
+GENPH=$(grep -rl '{{TASKS_REL}}\|{{DEFAULT_EPIC}}\|{{PROJECTS_REL}}\|{{PROJECTS_REL_LINE}}\|{{STATUS_REL}}\|{{CONTAINER_REL}}\|{{TASKS_BASE}}\|{{GENERATOR_VERSION}}' "$A/tasks" 2>/dev/null | wc -l | tr -d ' ')
 [[ "$GENPH" == "0" ]];                             t $? "generator-time placeholders fully rendered"
 grep -q '{{NAME}}' "$A/tasks/scripts/user-task-template.md"; t $? "runtime placeholders survive in templates"
 
@@ -315,7 +315,66 @@ grep -q 'TASK_STATUSES=' "$BF/tasks/scripts/task-env.sh";  t $? "TASK_STATUSES d
 t $? "  ...and not re-listed literally in new-epic.sh / list-tasks.sh"
 
 ############################################################
-section "10. Golden reproducibility (tests/run.sh)"
+section "10. Generator version stamp (task 26)"
+# An install that cannot say which contract it carries makes an OLD install and a
+# BROKEN one look identical from outside. The stamp closes that; the assertions
+# below also pin the property it must not cost us — reproducibility.
+VER="$(tr -d ' \t\r\n' < "$REPO/VERSION")"
+[[ -n "$VER" ]];                                   t $? "VERSION file present and non-empty ($VER)"
+VS="$SANDBOX/version"; newrepo "$VS"
+GOUT="$("$GEN" --target-repo "$VS" --tasks-dir tasks --epic main 2>&1)"
+grep -qF "GENERATOR_VERSION=\"$VER\"" "$VS/tasks/scripts/task-config.sh"
+t $? "fresh install stamped with the VERSION file's value"
+echo "$GOUT" | grep -qF "version: $VER";           t $? "generate.sh header reports the version"
+! echo "$GOUT" | grep -q 'upgrading\|unstamped';   t $? "  ...and reports no transition on a fresh install"
+# Every script gets it for free, because task-env.sh sources task-config.sh.
+SEEN="$( cd "$VS/tasks/scripts" && bash -c 'SCRIPTS_DIR="$(pwd)"; source ./task-env.sh; echo "$GENERATOR_VERSION"' 2>/dev/null )"
+[[ "$SEEN" == "$VER" ]];                           t $? "GENERATOR_VERSION visible to every script via task-env.sh"
+
+# Determinism (task 06's core property): a version string only — no dates, no
+# SHAs, no hostname. Two independent generations must stay byte-identical.
+V1="$SANDBOX/det1"; V2="$SANDBOX/det2"; newrepo "$V1"; newrepo "$V2"
+"$GEN" --target-repo "$V1" --tasks-dir tasks --epic main >/dev/null 2>&1
+"$GEN" --target-repo "$V2" --tasks-dir tasks --epic main >/dev/null 2>&1
+diff -r "$V1/tasks" "$V2/tasks" >/dev/null 2>&1
+t $? "two independent generations still byte-identical"
+
+# Regenerating over an OLDER stamp reports the transition and rewrites the value.
+perl -0pi -e 's/^GENERATOR_VERSION=".*"$/GENERATOR_VERSION="0.0.1-ancient"/m' "$VS/tasks/scripts/task-config.sh"
+GOUT="$("$GEN" --target-repo "$VS" --tasks-dir tasks --epic main 2>&1)"
+echo "$GOUT" | grep -qF "upgrading: 0.0.1-ancient -> $VER"; t $? "regen over an older stamp reports old -> new"
+grep -qF "GENERATOR_VERSION=\"$VER\"" "$VS/tasks/scripts/task-config.sh"
+t $? "  ...and rewrites the stamp (task-config.sh is machinery)"
+GOUT="$("$GEN" --target-repo "$VS" --tasks-dir tasks --epic main 2>&1)"
+! echo "$GOUT" | grep -q 'upgrading';              t $? "  ...same version re-run reports no transition"
+
+# A pre-stamp install (captains-log, create-ai-builder, second-brain today) reads
+# as unstamped rather than as an error, and needs no migration.
+perl -0pi -e 's/^GENERATOR_VERSION=".*"\n//m' "$VS/tasks/scripts/task-config.sh"
+! grep -q '^GENERATOR_VERSION=' "$VS/tasks/scripts/task-config.sh"; t $? "  (setup) stamp stripped to mimic a pre-versioning install"
+GOUT="$("$GEN" --target-repo "$VS" --tasks-dir tasks --epic main 2>&1)"
+echo "$GOUT" | grep -q 'installed: unstamped';     t $? "unstamped install reported as pre-versioning"
+grep -qF "GENERATOR_VERSION=\"$VER\"" "$VS/tasks/scripts/task-config.sh"
+t $? "  ...and gains a stamp with no migration"
+
+# The stamp must not leak into anything but task-config.sh, or every release bump
+# becomes a noisy golden diff.
+STAMPED=$(grep -rl '^GENERATOR_VERSION=' "$VS/tasks" 2>/dev/null | wc -l | tr -d ' ')
+[[ "$STAMPED" == "1" ]];                           t $? "stamp confined to task-config.sh (1 file)"
+VPH=$(grep -rl '{{GENERATOR_VERSION}}' "$VS/tasks" 2>/dev/null | wc -l | tr -d ' ')
+[[ "$VPH" == "0" ]];                               t $? "no unrendered {{GENERATOR_VERSION}} placeholder"
+
+# A vendored copy missing VERSION must fail loudly, not emit a guessed stamp.
+VC="$SANDBOX/vendored"; rm -rf "$VC"; mkdir -p "$VC"
+cp -R "$REPO/generate.sh" "$REPO/src" "$VC/"
+VT="$SANDBOX/vendor-target"; newrepo "$VT"
+bash "$VC/generate.sh" --target-repo "$VT" >/dev/null 2>&1
+[[ $? -ne 0 ]];                                    t $? "generator without a VERSION file exits non-zero"
+bash "$VC/generate.sh" --target-repo "$VT" 2>&1 >/dev/null | grep -q 'VERSION not found'
+t $? "  ...with a message naming the missing file"
+
+############################################################
+section "11. Golden reproducibility (tests/run.sh)"
 bash "$REPO/tests/run.sh" >/dev/null 2>&1
 t $? "generated output matches checked-in golden fixtures"
 

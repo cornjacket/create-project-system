@@ -6,6 +6,17 @@
 #
 # Sourced by task-env.sh.
 
+# Version of create-project-system that generated this install — the revision of
+# the layer-1 contract (generate.sh + its flags) this subsystem carries.
+#
+# Read it to decide whether an install needs regenerating, and to tell an OLD
+# install apart from a BROKEN one: those look identical from outside otherwise.
+# An install with no GENERATOR_VERSION line predates version stamping.
+#
+# Machinery: rewritten on every regeneration. Never hand-edit it — an untrue
+# stamp is worse than no stamp.
+GENERATOR_VERSION="<normalised-by-golden-harness>"
+
 # Mount path of the task subsystem, relative to the repo root (e.g. "tasks",
 # "pm/tasks", ".tasks"). No leading or trailing slash.
 TASKS_REL="project/tasks"
