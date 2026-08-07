@@ -1,4 +1,4 @@
-# Task 28 — a root manifest that declares the mount
+# Task 28 — declare this install's keys in `discovery.json`
 
 **Type: feat.** Task 27 removes the need to scrape a task-system's *contents*.
 This removes the need to probe for its *location*. Requested by `dev-workspace`
@@ -6,6 +6,14 @@ on 2026-08-06 while planning inter-repo mail
 (`create-git-workspace/docs/plans/mail/PLAN.md`). Filed here because the
 workspace states the problem and this repo owns what a generated install declares
 about itself.
+
+**Updated 2026-08-07: the file is `discovery.json`, shared, not `inbox.json`.**
+A second generator now needs to declare something about the same repo —
+`create-context-hygiene` task `13`, advertising whether a hygiene check is
+installed. One capability file per generator would mean a consumer probing for
+`inbox.json`, then `context-hygiene.json`, then the next one: the exact problem
+this task exists to end, moved up a level. So there is **one file with keys
+inside**, and this generator owns its own.
 
 **Design this with task 27, not after it.** They share a payload shape, a
 versioning decision, and a JSON-encoding decision. Answering those twice is how
@@ -39,8 +47,21 @@ cannot describe itself, and consumers left to infer.
 
 ## The shape of the fix
 
-`generate.sh` writes a small JSON manifest at the **target repo root**, under a
-fixed name, declaring what it just installed.
+`generate.sh` writes its keys into **`discovery.json`** at the **target repo
+root**, declaring what it just installed:
+
+```json
+{
+  "tasks": { "version": 1, "mount": "project/tasks", "epic": "main" },
+  "inbox": { "version": 1, "path": "project/tasks/main/inbox", "format": "user-task" }
+}
+```
+
+Two keys, because they serve different consumers and have different lifetimes:
+`tasks` is what `replan` needs to stop probing, and `inbox` is what a sibling
+repo needs to file mail. Keeping `inbox` separate also lets a repo with **no**
+task-system hand-write that one key and still receive mail, which folding it
+under `tasks` would prevent.
 
 **Fixed path, fixed name, repo root — that is the entire point.** A consumer must
 be able to find it while knowing nothing about this repo's layout. That is
@@ -58,17 +79,24 @@ first decision below.
 
 ## Decisions to make
 
-- **Single-purpose file, or a manifest.** An `inbox.json` answers only the mail
-  consumer; a `repo.json` with a `tasks` key answers `replan` too. **Lean:
-  manifest.** The mount is wanted by both consumers, and a file named for one of
-  them makes the other's need look like a special case. It also gives later
-  cross-repo capabilities somewhere to land without another root file.
+- ~~**Single-purpose file, or a manifest.**~~ **Resolved 2026-08-07: a shared
+  manifest, `discovery.json`.** A second generator arrived needing to declare
+  something about the same repo before this one was built, which is the evidence
+  the open question was waiting for.
+- **Never rewrite another generator's key.** This is the rule that makes a shared
+  file safe, and it is the easiest one to break: read the existing file, set only
+  your own keys, write it back. A generator that writes the file wholesale
+  destroys whatever ran before it, and the damage is invisible until some
+  consumer asks for the missing key. **Assert it in the test suite** — install
+  this generator over a repo that already carries a foreign key, and check the
+  foreign key survives.
 - **The filename.** Whatever is chosen is permanent in practice — consumers pin
-  to it and old installs keep the old name forever. Decide it once, deliberately.
-- **Schema version of its own, or lean on task 26's generator stamp.** This is
-  the *same* decision task 27 is holding. **Answer both identically**, in one
-  sitting. Two files disagreeing about how they are versioned is worse than
-  either choice.
+  to it and old installs keep the old name forever. Decide it once, deliberately,
+  and decide it *with* `create-context-hygiene`, since both write the same file.
+- **Version per key, not per file.** A single file-level version cannot be honest
+  once two generators write at different times on different release schedules.
+  Each key carries its own. This is the *same* decision task 27 is holding for
+  its payload — **answer both identically**, in one sitting.
 - **Machinery or content.** **Lean: machinery** — it describes what the generator
   just did, so a hand edit is a false statement waiting to be believed. The
   apparent counter-case (a repo with a hand-rolled task system writing one by
@@ -84,7 +112,13 @@ first decision below.
 
 - [ ] Resolve the decisions above **jointly with task 27's** — payload shape,
       versioning, and the `python3`-vs-bash JSON encoding are shared questions.
-- [ ] Emit the manifest from `generate.sh` at the target repo root.
+- [ ] **Agree the file name and the merge rule with `create-context-hygiene`
+      task `13` before writing code.** Both generators write `discovery.json`
+      into the same repos. If they disagree about the name, or if either writes
+      the file wholesale, one silently erases the other.
+- [ ] Emit the `tasks` and `inbox` keys from `generate.sh`, merging into any
+      existing `discovery.json` rather than replacing it.
+- [ ] Document the file and this generator's keys in `README.md`.
 - [ ] Preserve task 06's byte-identical reproducibility: declared values only, no
       dates and no SHAs (same constraint task 26 carries).
 - [ ] Document the payload, and say plainly that the file is the *supported* way
