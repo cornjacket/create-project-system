@@ -61,13 +61,13 @@ outright and let the pipeline overlay own its own docs).
 
 ## What to do
 
-- [ ] Trim the layer-2 row in `docs/composition-with-create-ai-builder.md` to
+- [x] Trim the layer-2 row in `docs/composition-with-create-ai-builder.md` to
       the installed overlay (7 scripts), separating it from create-ai-builder's
       build machinery.
-- [ ] Remove or conditionally-gate the `new-pipeline-subtask.sh` /
+- [x] Remove or conditionally-gate the `new-pipeline-subtask.sh` /
       `set-current-job.sh` references in `src/docs/README.md` so the emitted
       README matches the scripts `generate.sh` installs.
-- [ ] Regenerate the self-test sandbox and confirm the emitted README no longer
+- [x] Regenerate the self-test sandbox and confirm the emitted README no longer
       names uninstalled scripts.
 
 ## Done when

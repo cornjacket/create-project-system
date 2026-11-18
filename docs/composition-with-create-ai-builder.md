@@ -13,7 +13,13 @@ different sources**:
 | Layer | What | Owner / source | How it lands |
 |---|---|---|---|
 | **1. Task system** | `project/tasks/` scripts + `task-env.sh`/`task-config.sh`, `docs/` (USING.md, README, task-manager), the `task-system` **skill**, the `## Task tracking` **CLAUDE.md** block | **create-project-system** (this repo) — single source | `generate.sh --tasks-dir project/tasks --with-status --with-skill --inject-claude-md` |
-| **2. Pipeline overlay** | the 7 pipeline scripts (`advance-pipeline`, `new-pipeline-*`, `on-task-complete`, `set-current-job`, `check-stop-after`, `pipeline-build-template`) + orchestrator/roles/machines | **create-ai-builder** — its own hand-maintained code | copied/installed **on top of** layer 1 |
+| **2. Pipeline overlay** | the 7 pipeline scripts (`advance-pipeline`, `new-pipeline-*`, `on-task-complete`, `set-current-job`, `check-stop-after`, `pipeline-build-template`) | **create-ai-builder** — its own hand-maintained code | copied/installed **on top of** layer 1 |
+
+The orchestrator, roles, and machines are **not** part of the overlay. They are
+create-ai-builder's own build machinery and stay in create-ai-builder's repo. The
+orchestrator only reaches into a target's scripts directory
+(`PM_SCRIPTS_DIR = TARGET_REPO/project/tasks/scripts`). It reads no engine,
+machine, or role file from inside a target.
 
 **The pipeline layer does NOT come from `generate.sh`.** `generate.sh` only ever
 emits the task-system layer. Layer 2 is create-ai-builder's, laid on top.

@@ -40,7 +40,9 @@ integrate, test) created by the TM agent. Pipeline-owned once submitted.
 - Has a `Parent` field (can point to a user-task, user-subtask, or pipeline-subtask)
 - Contains pipeline sections (Components, Design, AC, Suggested Tools)
 - Can only contain **pipeline-subtasks** — no human-owned children
-- Template: `pipeline-build-template.md` | Script: `new-pipeline-subtask.sh`
+- Created by a pipeline overlay (for example create-ai-builder). This install
+  does not include a pipeline template or script. The scripts here read and
+  list pipeline-subtasks that an overlay creates.
 
 ---
 
@@ -80,7 +82,6 @@ tasks/
     scripts/
         new-user-task.sh        # create a top-level user-task
         new-user-subtask.sh     # create a human-owned subtask
-        new-pipeline-subtask.sh # create a pipeline entry point or internal node
         move-task.sh            # move a task to a different status folder
         complete-task.sh        # mark a task or subtask done/undone
         delete-task.sh          # soft-delete: hides directory, removes from parent README
@@ -92,7 +93,6 @@ tasks/
         task-id-helpers.sh      # shared helper: get/increment Next-subtask-id, resolve X- prefix
         user-task-template.md
         user-subtask-template.md
-        pipeline-build-template.md
 ```
 
 ---
@@ -111,8 +111,8 @@ project/projects/
             README.md
 ```
 
-Use `new-user-task.sh` for the service directory, `new-pipeline-subtask.sh`
-for each build.
+Use `new-user-task.sh` for the service directory. The pipeline overlay creates
+each build.
 
 ---
 
@@ -124,8 +124,8 @@ Each task is a **directory** containing a `README.md` that describes the task.
 
 **Subtask** directory names are `{parent-short-id}-{NNNN}-{name}` where `{NNNN}` is a
 zero-padded 4-digit counter (e.g. `a3f2c1-0001-design-review`). The parent's
-`Next-subtask-id` field is incremented automatically by `new-user-subtask.sh` and
-`new-pipeline-subtask.sh`. When a subtask is marked complete, its directory is renamed
+`Next-subtask-id` field is incremented automatically by the scripts that create
+subtasks. When a subtask is marked complete, its directory is renamed
 with an `X-` prefix (e.g. `X-a3f2c1-0001-design-review`) to signal completion at the
 filesystem level.
 
@@ -238,10 +238,6 @@ tasks/scripts/new-user-task.sh --epic main --folder draft \
 tasks/scripts/new-user-subtask.sh --epic main --folder in-progress \
     --parent my-project --name design-review
 
-# Create a pipeline entry point (build-N)
-tasks/scripts/new-pipeline-subtask.sh --epic main --folder in-progress \
-    --parent my-project --name build-1
-
 # Move a task (and all its subtasks) to a different status
 tasks/scripts/move-task.sh --epic main --name my-task \
     --from draft --to backlog
@@ -305,11 +301,6 @@ tasks/scripts/list-tasks.sh --root main/in-progress/my-task --depth 3
 tasks/scripts/next-subtask.sh --epic main --folder in-progress \
     --parent my-task
 
-# Write the absolute path of a task README to current-job.txt (for pipeline use)
-tasks/scripts/set-current-job.sh \
-    --output-dir <pipeline-output-dir> \
-    <path-to-task-README.md>
-
 # Check whether a task is the last (integration) subtask (exit 0 = yes, 1 = no)
 tasks/scripts/is-last-task.sh <path-to-task-README.md>
 
@@ -320,9 +311,6 @@ tasks/scripts/rename-subtask.sh --epic main --folder in-progress \
 # Insert a new subtask at position NNNN, shifting later subtasks up by one
 tasks/scripts/insert-subtask.sh --epic main --folder in-progress \
     --parent my-task --at 0003 --name new-step
-# With pipeline type:
-tasks/scripts/insert-subtask.sh --epic main --folder in-progress \
-    --parent my-task --at 0003 --name new-step --type pipeline
 ```
 
 ---
