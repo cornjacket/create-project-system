@@ -90,6 +90,9 @@ first decision below.
   consumer asks for the missing key. **Assert it in the test suite** — install
   this generator over a repo that already carries a foreign key, and check the
   foreign key survives.
+  **Settled 2026-11-17 at the workspace (`dev-workspace` task `229ccb-0000`):**
+  a generator reads `discovery.json`, changes only the key it owns, keeps every
+  other key, and stops with an error on a malformed file.
 - **The filename.** Whatever is chosen is permanent in practice — consumers pin
   to it and old installs keep the old name forever. Decide it once, deliberately,
   and decide it *with* `create-context-hygiene`, since both write the same file.
